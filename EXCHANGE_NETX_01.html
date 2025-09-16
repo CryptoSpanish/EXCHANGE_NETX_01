@@ -847,7 +847,22 @@
           // Formatear según el tipo de columna
           if (col === 'precio') {
             const num = toNum(value);
-            return `<td>${num != null ? ' + fmt2.format(num) : value}</td>`;
+            return `<td>${num != null ? '
+        }).join('') +
+        '</tr>';
+    }).join('');
+  }
+  
+  // Auto-actualización cada 5 minutos
+  setInterval(loadData, 5 * 60 * 1000);
+  
+  // Cargar al iniciar
+  window.addEventListener('load', () => {
+    setTimeout(loadData, 100);
+  });
+</script>
+</body>
+</html> + fmt2.format(num) : value}</td>`;
           } else if (col.includes('vol') || col.includes('total') || col.includes('trades')) {
             const num = toNum(value);
             return `<td>${num != null ? fmt.format(num) : value}</td>`;
