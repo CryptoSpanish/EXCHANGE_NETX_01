@@ -762,3 +762,109 @@
     });
     
     // Gráfico de balance
+    if (CHARTS.balance) CHARTS.balance.destroy();
+    CHARTS.balance = new Chart($('chartBalance').getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: 'Comprados',
+            data: bought,
+            backgroundColor: 'rgba(42,211,155,0.6)',
+            borderColor: '#2ad39b',
+            borderWidth: 1
+          },
+          {
+            label: 'Vendidos',
+            data: sold.map(v => -v),
+            backgroundColor: 'rgba(255,87,119,0.6)',
+            borderColor: '#ff5777',
+            borderWidth: 1
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { 
+            labels: { color: '#cfe3ff', font: { size: 11 } }
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                const value = Math.abs(context.parsed.y);
+                return context.dataset.label + ': ' + fmt.format(value);
+              }
+            }
+          }
+        },
+        scales: {
+          y: {
+            grid: { color: 'rgba(27,42,74,0.3)' },
+            ticks: { 
+              color: '#8ea0d3', 
+              font: { size: 10 },
+              callback: function(value) {
+                return fmt.format(Math.abs(value));
+              }
+            }
+          },
+          x: {
+            grid: { color: 'rgba(27,42,74,0.3)' },
+            ticks: { color: '#8ea0d3', maxTicksLimit: 8, font: { size: 10 } }
+          }
+        }
+      }
+    });
+  }
+  
+  // Renderizar tabla
+  function renderTable(headers, rows) {
+    const thead = $('tblAll').querySelector('thead');
+    const tbody = $('tblAll').querySelector('tbody');
+    
+    // Columnas principales para mostrar
+    const mainCols = ['fecha_ref', 'precio', 'trades_total', 'comprados_total', 'vendidos_total', 'vol_netx_total', 'vol_usdt_total'];
+    
+    // Headers
+    thead.innerHTML = '<tr>' + 
+      mainCols.map(col => {
+        const header = headers.find(h => h === col) || col;
+        return `<th>${header.replace(/_/g, ' ').toUpperCase()}</th>`;
+      }).join('') + 
+      '</tr>';
+    
+    // Filas (últimas 20, invertidas)
+    const recentRows = rows.slice(-20).reverse();
+    tbody.innerHTML = recentRows.map(row => {
+      return '<tr>' +
+        mainCols.map(col => {
+          const idx = headers.indexOf(col);
+          const value = idx >= 0 ? row[idx] : '';
+          
+          // Formatear según el tipo de columna
+          if (col === 'precio') {
+            const num = toNum(value);
+            return `<td>${num != null ? ' + fmt2.format(num) : value}</td>`;
+          } else if (col.includes('vol') || col.includes('total') || col.includes('trades')) {
+            const num = toNum(value);
+            return `<td>${num != null ? fmt.format(num) : value}</td>`;
+          }
+          return `<td>${value}</td>`;
+        }).join('') +
+        '</tr>';
+    }).join('');
+  }
+  
+  // Auto-actualización cada 5 minutos
+  setInterval(loadData, 5 * 60 * 1000);
+  
+  // Cargar al iniciar
+  window.addEventListener('load', () => {
+    setTimeout(loadData, 100);
+  });
+</script>
+</body>
+</html>
