@@ -7,31 +7,72 @@
 <link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@300;400;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
-  :root{--bg0:#0c1220;--bg1:#131b2f;--panel:rgba(22,30,52,.85);--ink:#dfe7ff;--mut:#8ea0d3;--green:#2ad39b;--red:#ff5777;--cyan:#00e0ff;--border-color:#1b2440;--hover-bg:#0e1632}
+  :root{
+    --bg0:#0c1220;--bg1:#131b2f;--panel:rgba(22,30,52,.85);
+    --ink:#dfe7ff;--mut:#8ea0d3;--green:#2ad39b;--red:#ff5777;--cyan:#00e0ff;
+    --border-color:#1b2440;--hover-bg:#0e1632;
+    --ring-bg: rgba(255,255,255,.06);
+  }
   html,body{height:100%}
-  
+
+  /* Fondo existente con animación suave */
   @keyframes futuristic-background {
     0% { background-position: 90% -10%, -20% 0%; }
     50% { background-position: -10% 110%, 120% 100%; }
     100% { background-position: 90% -10%, -20% 0%; }
   }
-
   body{
-    margin:0;
-    color:var(--ink);
-    background-color: var(--bg1); /* Fallback */
-    background-image: 
+    margin:0;color:var(--ink);
+    background-color: var(--bg1);
+    background-image:
       radial-gradient(1200px 600px, rgba(94,208,255,.10), transparent 60%),
       radial-gradient(1000px 500px, rgba(42,211,155,.08), transparent 60%),
       linear-gradient(180deg,var(--bg0),var(--bg1));
-    background-repeat: no-repeat;
-    background-size: auto, auto, 100% 100%;
+    background-repeat:no-repeat;background-size:auto,auto,100% 100%;
     font-family:Oxanium,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
     animation: futuristic-background 25s ease-in-out infinite;
   }
 
-  .wrap{max-width:1250px;margin:22px auto;padding:0 14px}
-  .card{background:var(--panel);border:1px solid var(--border-color);border-radius:14px;padding:18px;box-shadow:0 10px 30px rgba(0,0,0,.35),inset 0 0 0 1px rgba(255,255,255,.03);backdrop-filter:saturate(120%) blur(6px)}
+  /* === CAPA DE EFECTOS DE FONDO === */
+  /* Canvas de partículas/líneas */
+  #bgfx{
+    position:fixed; inset:0; z-index:0; pointer-events:none; display:block;
+  }
+  /* Grid ciber con ligero desplazamiento */
+  @keyframes grid-drift {
+    0%{ background-position: 0 0, 0 0;}
+    100%{ background-position: 200px 120px, 200px 120px;}
+  }
+  .bg-grid{
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    background-image:
+      linear-gradient(transparent calc(100% - 1px), rgba(0,224,255,.10) 1px),
+      linear-gradient(90deg, transparent calc(100% - 1px), rgba(0,224,255,.10) 1px);
+    background-size:120px 120px, 120px 120px;
+    opacity:.08;
+    animation: grid-drift 30s linear infinite;
+  }
+  /* Scanlines muy sutiles */
+  .bg-scan{
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    background: repeating-linear-gradient(
+      180deg, rgba(0,0,0,.0) 0, rgba(0,0,0,.0) 3px, rgba(0,0,0,.03) 4px
+    );
+    mix-blend-mode: soft-light;
+  }
+  /* Respeto a usuarios con reduce motion */
+  @media (prefers-reduced-motion: reduce) {
+    body{animation:none}
+    .bg-grid{animation:none}
+  }
+
+  /* === LAYOUT / TARJETAS === */
+  .wrap{position:relative; z-index:1; max-width:1250px;margin:22px auto;padding:0 14px}
+  .card{
+    background:var(--panel);border:1px solid var(--border-color);border-radius:14px;padding:18px;
+    box-shadow:0 10px 30px rgba(0,0,0,.35),inset 0 0 0 1px rgba(255,255,255,.03);
+    backdrop-filter:saturate(120%) blur(6px)
+  }
   .title{display:flex;gap:10px;align-items:center;margin:0 0 12px}
   .title .dot{width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,#1f2a4a,#304170)}
   .title h1{font-size:26px;margin:0}
@@ -49,7 +90,6 @@
   thead th[data-order]::after{content:'';display:inline-block;width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;margin-left:8px;vertical-align:middle;opacity:.7}
   thead th[data-order="asc"]::after{border-bottom:5px solid var(--cyan)}
   thead th[data-order="desc"]::after{border-top:5px solid var(--cyan)}
-
   tbody td{border-bottom:1px solid #172045;padding:8px 8px}
   tbody tr:hover{background:var(--hover-bg)}
   .loading{animation:pulse 1.5s ease-in-out infinite}
@@ -57,80 +97,74 @@
   .note{color:#9fb3ff;font-size:12px;margin-top:8px}
   .flex{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
   .spacer{flex:1}
-  
   input#txtFilterAll{background:var(--bg0);border:1px solid #2b3a66;border-radius:8px;padding:8px 12px;color:var(--ink);font-family:inherit;font-size:14px;transition:border-color .2s}
   input#txtFilterAll:focus{outline:none;border-color:var(--cyan)}
   .btn{background:rgba(0,224,255,0.1);border:1px solid var(--cyan);color:var(--cyan);padding:6px 12px;border-radius:8px;cursor:pointer;font-family:inherit;font-size:14px;transition:all .2s ease}
   .btn:hover{background:rgba(0,224,255,0.2);box-shadow:0 0 10px rgba(0,224,255,0.3)}
-
   .text-green { color: var(--green); font-weight: 600; }
   .text-red { color: var(--red); font-weight: 600; }
   .text-cyan { color: var(--cyan); font-weight: 600; }
+  .table-container {border: 1px solid #172045;border-radius: 12px;overflow-x: auto}
+  .pagination-controls {justify-content: center;margin-top: 16px;user-select: none}
+  .pagination-controls .btn[disabled] {opacity: 0.5;cursor: not-allowed;background: transparent}
+  .pagination-info {padding: 0 15px;align-self: center}
 
-  .table-container {
-    border: 1px solid #172045;
-    border-radius: 12px;
-    overflow-x: auto;
+  /* === KPI “GAUGES” (fila nueva) === */
+  .row.pki{grid-template-columns:repeat(6,1fr)}
+  .kpi-mini h4{margin:0 0 4px;color:#9fb3ff;font-size:12px;letter-spacing:.3px;text-transform:uppercase}
+  .kpi-mini .kpi-row{display:flex;align-items:center;gap:12px}
+  .ring{
+    --p: 0;         /* 0..100 */
+    --clr: var(--cyan);
+    width:58px;height:58px;border-radius:50%;
+    background:
+      conic-gradient(var(--clr) calc(var(--p)*1%), var(--ring-bg) 0);
+    position:relative;flex:0 0 58px;
+    -webkit-mask: radial-gradient(circle at 50% 50%, transparent 56%, #000 57%);
+            mask: radial-gradient(circle at 50% 50%, transparent 56%, #000 57%);
+    box-shadow: 0 0 0 1px rgba(255,255,255,.04) inset, 0 0 20px rgba(0,224,255,.10);
   }
+  .ring::after{
+    content:''; position:absolute; inset:8px; border-radius:50%;
+    background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.15), transparent 40%);
+    box-shadow: inset 0 0 12px rgba(0,0,0,.45);
+  }
+  .kpi-pct{font-size:18px;font-weight:700;line-height:1}
+  .kpi-sub{font-size:12px;color:#8ea0d3}
+  .tag{display:inline-block;border:1px solid #2b3a66;color:#9fb3ff;background:rgba(30,45,86,.5);padding:2px 8px;border-radius:999px;font-size:11px}
 
-  .pagination-controls {
-    justify-content: center;
-    margin-top: 16px;
-    user-select: none;
-  }
-  .pagination-controls .btn[disabled] {
-    opacity: 0.5;
-    cursor: not-allowed;
-    background: transparent;
-  }
-  .pagination-info {
-    padding: 0 15px;
-    align-self: center;
-  }
-  
+  /* Banner inferior */
   .promo-banner {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
+    position: fixed; bottom: 0; left: 0; width: 100%;
     background: rgba(12, 18, 32, 0.85);
-    border-top: 1px solid var(--cyan);
-    box-shadow: 0 0 20px rgba(0, 224, 255, 0.2);
-    backdrop-filter: blur(5px);
-    padding: 12px 0;
-    overflow: hidden;
-    z-index: 1000;
+    border-top: 1px solid var(--cyan); box-shadow: 0 0 20px rgba(0, 224, 255, 0.2);
+    backdrop-filter: blur(5px); padding: 12px 0; overflow: hidden; z-index: 1000;
   }
-  .promo-banner a {
-    display: block;
-    width: 100%;
-    text-decoration: none;
-    color: var(--ink);
-    white-space: nowrap;
-  }
+  .promo-banner a { display:block;width:100%;text-decoration:none;color:var(--ink);white-space:nowrap}
   .promo-banner .promo-text {
-    display: inline-block;
-    font-size: 16px;
-    font-weight: 600;
-    letter-spacing: .5px;
-    text-transform: uppercase;
-    animation: scroll-left 30s linear infinite;
-    will-change: transform;
+    display:inline-block;font-size:16px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;
+    animation: scroll-left 30s linear infinite; will-change: transform;
   }
-  @keyframes scroll-left {
-    from {
-      transform: translateX(100vw);
-    }
-    to {
-      transform: translateX(-100%);
-    }
-  }
+  @keyframes scroll-left { from{transform:translateX(100vw)} to{transform:translateX(-100%)} }
 
-  @media (max-width:1100px){.row.kpis{grid-template-columns:repeat(3,1fr)}.grid-2{grid-template-columns:1fr}}
-  @media (max-width:640px){.row.kpis{grid-template-columns:repeat(2,1fr)}}
+  @media (max-width:1100px){
+    .row.kpis{grid-template-columns:repeat(3,1fr)}
+    .row.pki{grid-template-columns:repeat(3,1fr)}
+    .grid-2{grid-template-columns:1fr}
+  }
+  @media (max-width:640px){
+    .row.kpis{grid-template-columns:repeat(2,1fr)}
+    .row.pki{grid-template-columns:repeat(2,1fr)}
+  }
 </style>
 </head>
 <body>
+
+<!-- Capas de fondo dinámico -->
+<canvas id="bgfx" aria-hidden="true"></canvas>
+<div class="bg-grid" aria-hidden="true"></div>
+<div class="bg-scan" aria-hidden="true"></div>
+
 <div class="wrap">
   <div class="card" aria-live="polite">
     <div class="title">
@@ -141,6 +175,7 @@
     <div id="msg" class="note" role="status"></div>
   </div>
 
+  <!-- KPIs principales -->
   <div class="row kpis" aria-label="Indicadores clave">
     <div class="card kpi"><h3>PRECIO PROMEDIO $NETX</h3><div id="kpiPrecio" class="v">—</div></div>
     <div class="card kpi"><h3>TRADES TOTALES</h3><div id="kpiTrades" class="v">—</div></div>
@@ -150,6 +185,71 @@
     <div class="card kpi"><h3>VOL. USDT (total)</h3><div id="kpiVolUsdt" class="v">—</div></div>
   </div>
 
+  <!-- KPI “gauges” estilo dashboard -->
+  <div class="row pki" aria-label="Marcadores KPI">
+    <div class="card kpi-mini">
+      <div class="kpi-row">
+        <div id="ringMomentum" class="ring" aria-hidden="true"></div>
+        <div>
+          <h4>Momentum precio</h4>
+          <div id="kpiMomentum" class="kpi-pct">—</div>
+          <div class="kpi-sub">vs. día anterior</div>
+        </div>
+      </div>
+    </div>
+    <div class="card kpi-mini">
+      <div class="kpi-row">
+        <div id="ringDominio" class="ring" aria-hidden="true"></div>
+        <div>
+          <h4>Dominio compras</h4>
+          <div id="kpiDominio" class="kpi-pct">—</div>
+          <div class="kpi-sub">Comprados / Total</div>
+        </div>
+      </div>
+    </div>
+    <div class="card kpi-mini">
+      <div class="kpi-row">
+        <div id="ringTrades" class="ring" aria-hidden="true"></div>
+        <div>
+          <h4>Intensidad trades</h4>
+          <div id="kpiTradesDay" class="kpi-pct">—</div>
+          <div class="kpi-sub">Día vs. máximo</div>
+        </div>
+      </div>
+    </div>
+    <div class="card kpi-mini">
+      <div class="kpi-row">
+        <div id="ringVolNetx" class="ring" aria-hidden="true"></div>
+        <div>
+          <h4>Vol. $NETX</h4>
+          <div id="kpiVolNetxDay" class="kpi-pct">—</div>
+          <div class="kpi-sub">Día vs. máximo</div>
+        </div>
+      </div>
+    </div>
+    <div class="card kpi-mini">
+      <div class="kpi-row">
+        <div id="ringVolUsdt" class="ring" aria-hidden="true"></div>
+        <div>
+          <h4>Vol. USDT</h4>
+          <div id="kpiVolUsdtDay" class="kpi-pct">—</div>
+          <div class="kpi-sub">Día vs. máximo</div>
+        </div>
+      </div>
+    </div>
+    <div class="card kpi-mini">
+      <div class="kpi-row">
+        <div id="ringGapEMA" class="ring" aria-hidden="true"></div>
+        <div>
+          <h4>Gap vs. MA7</h4>
+          <div id="kpiGapEMA" class="kpi-pct">—</div>
+          <div class="kpi-sub">Precio vs. media 7d</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gráfica y resumen por exchange -->
   <div class="grid-2">
     <div class="card">
       <div class="title"><div class="dot"></div><h1 style="font-size:18px">Serie temporal</h1></div>
@@ -164,12 +264,14 @@
     </div>
   </div>
 
+  <!-- Histórico -->
   <div class="card" style="margin-top:16px">
     <div class="flex title">
       <div class="dot"></div><h1 style="font-size:18px">Histórico (resúmenes diarios)</h1>
+      <span class="tag" id="dataInfo" aria-hidden="true">—</span>
       <div class="spacer"></div>
       <button id="btnRefresh" class="btn" title="Refrescar datos">Refrescar</button>
-      <input id="txtFilterAll" placeholder="Filtrar…" style="max-width:220px"/>
+      <input id="txtFilterAll" placeholder="Filtrar…" style="max-width:220px" aria-label="Filtrar tabla histórica"/>
     </div>
     <div class="table-container">
       <table id="tblAll" aria-label="Tabla histórica"><thead></thead><tbody></tbody></table>
@@ -203,6 +305,7 @@
   // --- UTILIDADES ---
   const fmt = new Intl.NumberFormat('es-ES', { maximumFractionDigits: 0 });
   const fmt2 = new Intl.NumberFormat('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const pct = new Intl.NumberFormat('es-ES', { maximumFractionDigits: 1 });
   const $ = id => document.getElementById(id);
   const toNum = (x) => {
     if (x == null || x === '') return null;
@@ -210,7 +313,7 @@
     const n = parseFloat(s);
     return Number.isFinite(n) ? n : null;
   };
-  
+
   const formatDate = (dateStr) => {
     if (!dateStr) return '';
     const date = new Date(dateStr + 'T00:00:00');
@@ -229,7 +332,6 @@
   };
 
   // --- LÓGICA PRINCIPAL ---
-
   async function loadTSV(url) {
     setStatus('Cargando…', true);
     try {
@@ -238,12 +340,14 @@
       const tsv = await res.text();
       const parsed = parseTSV(tsv);
       if (!parsed || !parsed.data.length) throw new Error("No se encontraron datos válidos.");
-      
+
       DATA = parsed;
       HIST_FILTERED_DATA = [...DATA.data];
       EXCHANGES = detectExchanges(DATA.headers);
-      
-      setStatus(`✓ ${DATA.data.length} registros · ${EXCHANGES.length} exchanges detectados`, false, `Actualizado: ${new Date().toLocaleTimeString()}`);
+
+      const info = `Registros: ${DATA.data.length} · Exchanges: ${EXCHANGES.length}`;
+      $('dataInfo').textContent = info;
+      setStatus(`✓ ${info}`, false, `Actualizado: ${new Date().toLocaleTimeString()}`);
       renderAll();
     } catch (err) {
       console.error(err);
@@ -264,7 +368,7 @@
     }).filter(Boolean);
     return { headers, data };
   }
-  
+
   function detectExchanges(headers) {
     const set = new Set();
     headers.forEach(h => {
@@ -273,20 +377,20 @@
     });
     return Array.from(set).sort();
   }
-  
+
   function resolveHeader(headers, key) {
     const list = SYNONYMS[key] || [key];
     return list.map(name => headers.find(h => h.toLowerCase() === name.toLowerCase())).find(Boolean) || null;
   }
 
-  // --- FUNCIONES DE RENDERIZADO ---
-
+  // --- RENDERIZADO GLOBAL ---
   function renderAll() {
     if (!DATA || !DATA.data.length) return;
     renderKPIs();
     renderExchangeTable();
     renderTimeSeriesChart();
     renderHistoryTable();
+    renderKPIBadges();   // NUEVO: marcadores KPI
   }
 
   function renderKPIs() {
@@ -297,19 +401,15 @@
     const H_st = resolveHeader(headers, 'vendidos_total');
     const H_vnt = resolveHeader(headers, 'vol_netx_total');
     const H_vut = resolveHeader(headers, 'vol_usdt_total');
-    
+
     const sum = (H) => H ? data.reduce((acc, row) => acc + (toNum(row[H]) || 0), 0) : null;
-    
+
     const avg = (H) => {
       if (!H) return null;
-      let total = 0;
-      let count = 0;
+      let total = 0, count = 0;
       data.forEach(row => {
         const n = toNum(row[H]);
-        if (n != null) {
-          total += n;
-          count++;
-        }
+        if (n != null) { total += n; count++; }
       });
       return count > 0 ? total / count : null;
     };
@@ -380,11 +480,8 @@
         plugins: {
           legend: { labels: { color: '#cfe3ff' } },
           tooltip: {
-            backgroundColor: 'rgba(13,27,48,0.9)',
-            titleColor: '#cfe3ff',
-            bodyColor: '#9fb3ff',
-            borderColor: '#2b3a66',
-            borderWidth: 1,
+            backgroundColor: 'rgba(13,27,48,0.9)', titleColor: '#cfe3ff', bodyColor: '#9fb3ff',
+            borderColor: '#2b3a66', borderWidth: 1,
             callbacks: {
               label: function(context) {
                 let label = context.dataset.label || '';
@@ -414,7 +511,7 @@
         return `<th data-index="${i}">${title}</th>`
       }).join('')}</tr>`;
     }
-    
+
     const startIndex = (currentPage - 1) * rowsPerPage;
     const endIndex = startIndex + rowsPerPage;
     const pageData = HIST_FILTERED_DATA.slice(startIndex, endIndex);
@@ -454,29 +551,22 @@
     const totalRows = HIST_FILTERED_DATA.length;
     const totalPages = Math.ceil(totalRows / rowsPerPage);
     const controlsContainer = $('paginationControls');
-    
-    if (totalPages <= 1) {
-      controlsContainer.innerHTML = '';
-      return;
-    }
+    if (totalPages <= 1) { controlsContainer.innerHTML = ''; return; }
 
     controlsContainer.innerHTML = `
       <button id="prevPage" class="btn" title="Página anterior">&laquo; Anterior</button>
       <span class="pagination-info pill">Página ${currentPage} de ${totalPages}</span>
       <button id="nextPage" class="btn" title="Página siguiente">Siguiente &raquo;</button>
     `;
-
     const prevButton = $('prevPage');
     const nextButton = $('nextPage');
     prevButton.disabled = currentPage === 1;
     nextButton.disabled = currentPage === totalPages;
-
     prevButton.onclick = () => { if (currentPage > 1) { currentPage--; renderHistoryTable(); } };
     nextButton.onclick = () => { if (currentPage < totalPages) { currentPage++; renderHistoryTable(); } };
   }
 
-  // --- MANEJO DE INTERACCIONES ---
-
+  // --- ORDENACIÓN, FILTRO, ESTADO ---
   function enableSort(tableId, isBig = false) {
     const table = $(tableId);
     const ths = table.querySelectorAll('thead th');
@@ -494,7 +584,9 @@
           HIST_FILTERED_DATA.sort((a, b) => {
             const ta = a[headerName] || ''; const tb = b[headerName] || '';
             const na = toNum(ta), nb = toNum(tb);
-            const cmp = (na != null && nb != null) ? na - nb : ta.toString().localeCompare(tb.toString(), 'es', { numeric: true, sensitivity: 'base' });
+            const cmp = (na != null && nb != null)
+              ? na - nb
+              : ta.toString().localeCompare(tb.toString(), 'es', { numeric: true, sensitivity: 'base' });
             return nextOrder === 'asc' ? cmp : -cmp;
           });
           currentPage = 1;
@@ -513,11 +605,11 @@
       };
     });
   }
-  
+
   function applyFilter() {
     const query = $('txtFilterAll').value.toLowerCase();
-    HIST_FILTERED_DATA = DATA.data.filter(row => 
-      Object.values(row).some(val => val.toString().toLowerCase().includes(query))
+    HIST_FILTERED_DATA = DATA.data.filter(row =>
+      Object.values(row).some(val => (val ?? '').toString().toLowerCase().includes(query))
     );
     currentPage = 1;
     renderHistoryTable();
@@ -529,9 +621,212 @@
     $('badge').title = detail || '';
     $('msg').textContent = detail || '';
   }
-  
+
+  // --- KPI BADGES (NUEVO) ---
+  function renderKPIBadges(){
+    const { headers, data } = DATA;
+    if (!data.length) return;
+
+    const H_px = resolveHeader(headers, 'precio');
+    const H_tt = resolveHeader(headers, 'trades_total');
+    const H_bt = resolveHeader(headers, 'comprados_total');
+    const H_st = resolveHeader(headers, 'vendidos_total');
+    const H_vnt = resolveHeader(headers, 'vol_netx_total');
+    const H_vut = resolveHeader(headers, 'vol_usdt_total');
+
+    const last = data[data.length-1];
+    const prev = data.length>1 ? data[data.length-2] : null;
+
+    const lastPrice = toNum(last?.[H_px]);
+    const prevPrice = toNum(prev?.[H_px]);
+    const tradesMax = Math.max(...data.map(r => toNum(r[H_tt])||0), 1);
+    const volNetxMax = Math.max(...data.map(r => toNum(r[H_vnt])||0), 1);
+    const volUsdtMax = Math.max(...data.map(r => toNum(r[H_vut])||0), 1);
+
+    const lastTrades = toNum(last?.[H_tt]) || 0;
+    const lastVolNetx = toNum(last?.[H_vnt]) || 0;
+    const lastVolUsdt = toNum(last?.[H_vut]) || 0;
+
+    const lastComprados = toNum(last?.[H_bt]) || 0;
+    const lastVendidos = toNum(last?.[H_st]) || 0;
+
+    // Momentum precio (% vs día anterior)
+    let mom = null;
+    if (lastPrice!=null && prevPrice!=null && prevPrice!==0) {
+      mom = ((lastPrice - prevPrice) / Math.abs(prevPrice)) * 100;
+    }
+
+    // Dominio de compras
+    const dominio = (lastComprados + lastVendidos) > 0
+      ? (lastComprados / (lastComprados + lastVendidos)) * 100
+      : null;
+
+    // Gap vs MA7
+    const ma7 = movingAvg(data.map(r=>toNum(r[H_px])), 7);
+    let gap = null;
+    if (lastPrice!=null && ma7.length) {
+      const lastMA7 = ma7[ma7.length-1];
+      if (lastMA7 && lastMA7!==0) gap = ((lastPrice - lastMA7) / Math.abs(lastMA7)) * 100;
+    }
+
+    // Normalizaciones 0..100
+    const tradesPct = (lastTrades / tradesMax) * 100;
+    const vNetxPct = (lastVolNetx / volNetxMax) * 100;
+    const vUsdtPct = (lastVolUsdt / volUsdtMax) * 100;
+
+    // Escritura visual
+    writeRing('ringMomentum', clampPct(Math.abs(mom ?? 0)), mom >= 0 ? 'var(--green)' : 'var(--red)');
+    writeText('kpiMomentum', mom==null ? '—' : (mom>0?'+':'') + pct.format(mom) + ' %');
+
+    writeRing('ringDominio', clampPct(dominio ?? 0), (dominio ?? 0) >= 50 ? 'var(--green)' : 'var(--red)');
+    writeText('kpiDominio', dominio==null ? '—' : pct.format(dominio) + ' %');
+
+    writeRing('ringTrades', clampPct(tradesPct), tradesPct>=66?'var(--green)':(tradesPct>=33?'var(--cyan)':'var(--red)'));
+    writeText('kpiTradesDay', isFinite(tradesPct)? pct.format(tradesPct)+' %':'—');
+
+    writeRing('ringVolNetx', clampPct(vNetxPct), vNetxPct>=66?'var(--green)':(vNetxPct>=33?'var(--cyan)':'var(--red)'));
+    writeText('kpiVolNetxDay', isFinite(vNetxPct)? pct.format(vNetxPct)+' %':'—');
+
+    writeRing('ringVolUsdt', clampPct(vUsdtPct), vUsdtPct>=66?'var(--green)':(vUsdtPct>=33?'var(--cyan)':'var(--red)'));
+    writeText('kpiVolUsdtDay', isFinite(vUsdtPct)? pct.format(vUsdtPct)+' %':'—');
+
+    const gapColor = (gap ?? 0) >= 0 ? 'var(--cyan)' : 'var(--red)';
+    writeRing('ringGapEMA', clampPct(Math.abs(gap ?? 0)), gapColor);
+    writeText('kpiGapEMA', gap==null ? '—' : (gap>0?'+':'') + pct.format(gap) + ' %');
+
+    // Etiquetas accesibles
+    $('#ringMomentum').setAttribute('aria-label', `Momentum del precio: ${$('kpiMomentum').textContent}`);
+    $('#ringDominio').setAttribute('aria-label', `Dominio de compras: ${$('kpiDominio').textContent}`);
+    $('#ringTrades').setAttribute('aria-label', `Intensidad de trades: ${$('kpiTradesDay').textContent}`);
+    $('#ringVolNetx').setAttribute('aria-label', `Volumen NETX vs máximo: ${$('kpiVolNetxDay').textContent}`);
+    $('#ringVolUsdt').setAttribute('aria-label', `Volumen USDT vs máximo: ${$('kpiVolUsdtDay').textContent}`);
+    $('#ringGapEMA').setAttribute('aria-label', `Diferencia respecto a MA7: ${$('kpiGapEMA').textContent}`);
+  }
+
+  function movingAvg(arr, windowSize){
+    const out = [];
+    if (!Array.isArray(arr) || windowSize<=0) return out;
+    let sum = 0, q = [];
+    for (let i=0;i<arr.length;i++){
+      const v = arr[i];
+      if (v!=null && isFinite(v)) { sum += v; q.push(v); }
+      else { q.push(null); }
+      if (q.length > windowSize){
+        const old = q.shift();
+        if (old!=null) sum -= old;
+      }
+      const valid = q.filter(x=>x!=null);
+      out.push(valid.length ? sum / valid.length : null);
+    }
+    return out;
+  }
+
+  function writeRing(id, percent, color){
+    const el = $(id);
+    if (!el) return;
+    el.style.setProperty('--p', (isFinite(percent)? Math.max(0, Math.min(100, percent)) : 0));
+    el.style.setProperty('--clr', color || 'var(--cyan)');
+  }
+  function writeText(id, text){ const el=$(id); if(el) el.textContent = text; }
+  function clampPct(x){ return Math.max(0, Math.min(100, x)); }
+
+  // --- FONDO DE PARTÍCULAS Y LÍNEAS (canvas) ---
+  (function quantumBackground(){
+    const canvas = $('bgfx');
+    const ctx = canvas.getContext('2d');
+    let dpr = Math.max(1, window.devicePixelRatio || 1);
+    let W=0,H=0, nodes=[];
+    const N = 72;                // número de nodos
+    const MAX_V = .15;           // velocidad base
+    const LINK_DIST = 140;       // distancia de conexión
+    const MOUSE_PULL = 0.08;     // atracción al puntero
+    let mouse = {x:null, y:null};
+
+    function rand(a,b){ return a + Math.random()*(b-a); }
+
+    function resize(){
+      W = canvas.width = Math.floor(innerWidth * dpr);
+      H = canvas.height = Math.floor(innerHeight * dpr);
+      canvas.style.width = innerWidth + 'px';
+      canvas.style.height = innerHeight + 'px';
+      // reescala nodos si no existen
+      if (!nodes.length){
+        for (let i=0;i<N;i++){
+          nodes.push({
+            x: rand(0,W), y: rand(0,H),
+            vx: rand(-MAX_V, MAX_V)*dpr, vy: rand(-MAX_V, MAX_V)*dpr,
+            r: rand(1.2, 2.2)*dpr
+          });
+        }
+      }
+    }
+    resize();
+    window.addEventListener('resize', resize);
+    window.addEventListener('mousemove', e=>{
+      const rect = canvas.getBoundingClientRect();
+      mouse.x = (e.clientX - rect.left) * dpr;
+      mouse.y = (e.clientY - rect.top) * dpr;
+    });
+    window.addEventListener('mouseleave', ()=>{ mouse.x = mouse.y = null; });
+
+    function step(){
+      ctx.clearRect(0,0,W,H);
+      ctx.globalCompositeOperation = 'lighter';
+
+      // líneas
+      for(let i=0;i<nodes.length;i++){
+        const a = nodes[i];
+        for(let j=i+1;j<nodes.length;j++){
+          const b = nodes[j];
+          const dx = a.x-b.x, dy = a.y-b.y;
+          const d2 = dx*dx+dy*dy;
+          if (d2 < LINK_DIST*LINK_DIST*dpr*dpr){
+            const d = Math.sqrt(d2);
+            const alpha = 1 - (d / (LINK_DIST*dpr));
+            ctx.lineWidth = 1 * dpr * alpha;
+            const g = ctx.createLinearGradient(a.x,a.y,b.x,b.y);
+            g.addColorStop(0, `rgba(0,224,255,${0.18*alpha})`);
+            g.addColorStop(1, `rgba(42,211,155,${0.18*alpha})`);
+            ctx.strokeStyle = g;
+            ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
+          }
+        }
+      }
+
+      // nodos
+      for(const p of nodes){
+        // interacción con el puntero
+        if (mouse.x!=null){
+          const dx = mouse.x - p.x, dy = mouse.y - p.y;
+          const d = Math.hypot(dx,dy) || 1;
+          p.vx += (dx/d) * MOUSE_PULL * dpr * 0.02;
+          p.vy += (dy/d) * MOUSE_PULL * dpr * 0.02;
+        }
+        p.x += p.vx; p.y += p.vy;
+
+        // rebote en bordes
+        if (p.x < 0 || p.x > W) p.vx *= -1, p.x = Math.max(0, Math.min(W, p.x));
+        if (p.y < 0 || p.y > H) p.vy *= -1, p.y = Math.max(0, Math.min(H, p.y));
+
+        // fricción leve
+        p.vx *= 0.995; p.vy *= 0.995;
+
+        // render del punto
+        const rad = p.r;
+        const grad = ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,rad*4);
+        grad.addColorStop(0, 'rgba(255,255,255,0.65)');
+        grad.addColorStop(1, 'rgba(0,224,255,0.0)');
+        ctx.fillStyle = grad;
+        ctx.beginPath(); ctx.arc(p.x,p.y,rad*2,0,Math.PI*2); ctx.fill();
+      }
+
+      ctx.globalCompositeOperation = 'source-over';
+      requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  })();
+
   // --- INICIALIZACIÓN ---
-  
   function init() {
     $('txtFilterAll').oninput = applyFilter;
     $('btnRefresh').onclick = () => { currentPage = 1; loadTSV(TSV_URL); };
@@ -551,5 +846,3 @@
 
 </body>
 </html>
-
-
