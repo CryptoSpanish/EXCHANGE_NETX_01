@@ -8,38 +8,69 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
   :root{--bg0:#0c1220;--bg1:#131b2f;--panel:rgba(22,30,52,.85);--ink:#dfe7ff;--mut:#8ea0d3;--green:#2ad39b;--red:#ff5777;--cyan:#00e0ff}
-  html,body{height:100%}body{margin:0;color:var(--ink);background:
+  html,body{height:100%}
+  body{margin:0;color:var(--ink);background:
     radial-gradient(1200px 600px at 90% -10%,rgba(94,208,255,.10),transparent 60%),
     radial-gradient(1000px 500px at -20% 0%,rgba(42,211,155,.08),transparent 60%),
     linear-gradient(180deg,var(--bg0),var(--bg1));font-family:Oxanium,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
   .wrap{max-width:1250px;margin:22px auto;padding:0 14px}
   .card{background:var(--panel);border:1px solid #1b2440;border-radius:14px;padding:18px;box-shadow:0 10px 30px rgba(0,0,0,.35),inset 0 0 0 1px rgba(255,255,255,.03);backdrop-filter:saturate(120%) blur(6px)}
-  .title{display:flex;gap:10px;align-items:center;margin:0 0 12px}.title .dot{width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,#1f2a4a,#304170)}.title h1{font-size:26px;margin:0}
+  .title{display:flex;gap:10px;align-items:center;margin:0 0 12px}
+  .title .dot{width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,#1f2a4a,#304170)}
+  .title h1{font-size:26px;margin:0}
   .pill{border:1px solid #2b3a66;color:#9fb3ff;background:rgba(30,45,86,.6);padding:6px 10px;border-radius:999px;font-size:12px}
   .toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px}
-  .toolbar input{flex:1 0 420px;background:#0f1730;color:#cfe3ff;border:1px solid #2b3a66;border-radius:10px;padding:10px 12px}
-  .toolbar button{background:#0f1730;color:#d9e4ff;border:1px solid #2b3a66;border-radius:10px;padding:10px 14px;cursor:pointer;transition:all .2s}.toolbar button:hover{background:#1a2444;border-color:#3a4a76}
-  .row{display:grid;gap:16px}.row.kpis{grid-template-columns:repeat(6,1fr)}.kpi h3{margin:0 0 6px;color:#9fb3ff;font-size:12px;text-transform:uppercase;letter-spacing:.5px}.kpi .v{font-size:28px;font-weight:700}.v.green{color:var(--green)}.v.red{color:var(--red)}.v.cyan{color:var(--cyan)}
-  .grid-2{display:grid;grid-template-columns:2.1fr 1fr;gap:16px}canvas{background:#0c1326;border-radius:12px;border:1px solid #1a2444}
-  table{width:100%;border-collapse:collapse;color:#cfe3ff;font-size:13px}thead th{position:sticky;top:0;background:#0f1730;border-bottom:1px solid #2a3a66;padding:10px 8px;text-align:left}tbody td{border-bottom:1px solid #172045;padding:8px 8px}tbody tr:hover{background:#0e1632}
-  .loading{animation:pulse 1.5s ease-in-out infinite}@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
-  @media (max-width:1100px){.row.kpis{grid-template-columns:repeat(3,1fr)}.grid-2{grid-template-columns:1fr}}@media (max-width:640px){.row.kpis{grid-template-columns:repeat(2,1fr)}}
+  .toolbar input{flex:1 0 340px;background:#0f1730;color:#cfe3ff;border:1px solid #2b3a66;border-radius:10px;padding:10px 12px}
+  .toolbar button,.toolbar select,.toolbar label{background:#0f1730;color:#d9e4ff;border:1px solid #2b3a66;border-radius:10px;padding:10px 14px;cursor:pointer;transition:all .2s}
+  .toolbar button:hover,.toolbar select:hover{background:#1a2444;border-color:#3a4a76}
+  .toolbar .ghost{background:transparent}
+  .row{display:grid;gap:16px}
+  .row.kpis{grid-template-columns:repeat(6,1fr)}
+  .kpi h3{margin:0 0 6px;color:#9fb3ff;font-size:12px;text-transform:uppercase;letter-spacing:.5px}
+  .kpi .v{font-size:28px;font-weight:700}
+  .v.green{color:var(--green)}.v.red{color:var(--red)}.v.cyan{color:var(--cyan)}
+  .grid-2{display:grid;grid-template-columns:2.1fr 1fr;gap:16px}
+  canvas{background:#0c1326;border-radius:12px;border:1px solid #1a2444}
+  table{width:100%;border-collapse:collapse;color:#cfe3ff;font-size:13px}
+  thead th{position:sticky;top:0;background:#0f1730;border-bottom:1px solid #2a3a66;padding:10px 8px;text-align:left;cursor:pointer;user-select:none}
+  tbody td{border-bottom:1px solid #172045;padding:8px 8px}
+  tbody tr:hover{background:#0e1632}
+  .loading{animation:pulse 1.5s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+  .note{color:#9fb3ff;font-size:12px;margin-top:8px}
+  .flex{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .spacer{flex:1}
+  .mut{color:#8ea0d3}
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+  @media (max-width:1100px){.row.kpis{grid-template-columns:repeat(3,1fr)}.grid-2{grid-template-columns:1fr}}
+  @media (max-width:640px){.row.kpis{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="card">
-    <div class="title"><div class="dot"></div><h1>NETX • Quantum Dashboard</h1><span id="badge" class="pill loading">Cargando…</span></div>
-    <div class="toolbar">
-      <input id="txtUrl" placeholder="URL del TSV (Google Sheets publicado)"
+  <div class="card" aria-live="polite">
+    <div class="title"><div class="dot"></div><h1>NETX • Quantum Dashboard</h1><span id="badge" class="pill loading" title="Estado de carga">Cargando…</span></div>
+    <div class="toolbar" role="group" aria-label="Controles principales">
+      <label for="txtUrl" class="sr-only">URL del TSV (Google Sheets publicado)</label>
+      <input id="txtUrl" placeholder="URL del TSV (Google Sheets publicado)" inputmode="url"
              value="https://docs.google.com/spreadsheets/d/e/2PACX-1vTGjCTThPQ3rbhgN9WDwDvmDSwCpq-ue9AZTFZNF4AJa7dvmtds1D46tgAr3727jSGJcxgNCOVACFjk/pub?output=tsv">
-      <button id="btnUrl">📊 Cargar datos</button>
-      <button id="btnRefresh">🔄 Actualizar</button>
-      <button id="btnDemo">🎯 Datos demo</button>
+      <button id="btnUrl" aria-label="Cargar datos desde URL">📊 Cargar</button>
+      <button id="btnRefresh" aria-label="Actualizar datos">🔄 Actualizar</button>
+      <button id="btnDemo" class="ghost" aria-label="Cargar datos de demostración">🎯 Demo</button>
+      <div class="spacer"></div>
+      <label for="selAuto" class="mut">Auto-actualizar</label>
+      <select id="selAuto" aria-label="Intervalo de auto-actualización">
+        <option value="0">Apagado</option>
+        <option value="30">30 s</option>
+        <option value="60" selected>60 s</option>
+        <option value="300">5 min</option>
+      </select>
+      <button id="btnExport" title="Exportar tabla histórica a CSV">⬇️ Exportar CSV</button>
     </div>
+    <div id="msg" class="note" role="status"></div>
   </div>
 
-  <div class="row kpis">
+  <div class="row kpis" aria-label="Indicadores clave">
     <div class="card kpi"><h3>PRECIO $NETX</h3><div id="kpiPrecio" class="v">—</div></div>
     <div class="card kpi"><h3>TRADES TOTALES</h3><div id="kpiTrades" class="v">—</div></div>
     <div class="card kpi"><h3>$NETX COMPRADOS</h3><div id="kpiComprados" class="v green">—</div></div>
@@ -51,12 +82,12 @@
   <div class="grid-2">
     <div class="card">
       <div class="title"><div class="dot"></div><h1 style="font-size:18px">Serie temporal</h1></div>
-      <canvas id="chart"></canvas>
+      <canvas id="chart" aria-label="Serie temporal de precio y volumen" role="img"></canvas>
     </div>
     <div class="card">
       <div class="title"><div class="dot"></div><h1 style="font-size:18px">Detalle por exchange (última fila)</h1></div>
-      <table id="tblEx">
-        <thead><tr><th>Exchange</th><th>Trades</th><th>Vendidos</th><th>Comprados</th><th>Vol. $NETX</th><th>Vol. USDT</th></tr></thead>
+      <table id="tblEx" aria-describedby="lblFecha">
+        <thead><tr><th data-col="exchange">Exchange</th><th data-col="trades">Trades</th><th data-col="vendidos">Vendidos</th><th data-col="comprados">Comprados</th><th data-col="vol_netx">Vol. $NETX</th><th data-col="vol_usdt">Vol. USDT</th></tr></thead>
         <tbody></tbody>
       </table>
       <div id="lblFecha" class="pill" style="display:inline-block;margin-top:10px">—</div>
@@ -64,162 +95,296 @@
   </div>
 
   <div class="card" style="margin-top:16px">
-    <div class="title"><div class="dot"></div><h1 style="font-size:18px">Histórico (resúmenes diarios)</h1></div>
+    <div class="flex title"><div class="dot"></div><h1 style="font-size:18px">Histórico (resúmenes diarios)</h1><div class="spacer"></div><input id="txtFilterAll" placeholder="Filtrar…" style="max-width:220px"/></div>
     <div style="max-height:560px;overflow:auto;border:1px solid #172045;border-radius:12px">
-      <table id="tblAll"><thead></thead><tbody></tbody></table>
+      <table id="tblAll" aria-label="Tabla histórica"><thead></thead><tbody></tbody></table>
     </div>
   </div>
 </div>
 
 <script>
+  // ————————————————
+  // Utilidades de formato
+  // ————————————————
   const fmt  = new Intl.NumberFormat('es-ES',{maximumFractionDigits:0});
   const fmt2 = new Intl.NumberFormat('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2});
   const $ = id => document.getElementById(id);
 
-  let DATA=null, HEADMAP=null, CHART=null;
+  let DATA=null, CHART=null, AUTO_ID=null, EXCHANGES=[]; // EXCHANGES se detecta dinámicamente
 
-  // Parser TSV
-  function parseTSV(tsv) {
-    const lines = tsv.trim().split('\n');
-    if (lines.length === 0) return { headers: [], data: [] };
-    const headers = lines[0].split('\t');
+  const DISPLAY_NAME = {
+    mexc: 'MEXC', gate: 'Gate.io', binance: 'Binance', okx: 'OKX', bybit: 'Bybit'
+  };
+
+  // Determina si un valor de celda representa número en formato es-ES
+  function toNum(x){
+    if (x==null || x==='') return null;
+    const s = x.toString().trim().replace(/\./g,'').replace(',', '.');
+    const n = parseFloat(s);
+    return Number.isFinite(n) ? n : null;
+  }
+
+  // Parseador TSV robusto
+  function parseTSV(tsv){
+    const lines = tsv.replace(/\r\n?/g,'\n').trim().split('\n');
+    if (!lines.length) return {headers:[], data:[]};
+    const headers = lines[0].split('\t').map(h=>h.trim());
     const data = [];
-    for (let i = 1; i < lines.length; i++) {
+    for (let i=1;i<lines.length;i++){
+      if (!lines[i].trim()) continue; // salta líneas vacías
       const values = lines[i].split('\t');
-      const row = {};
-      headers.forEach((header, index) => { row[header] = values[index] || ''; });
+      const row={}; headers.forEach((h,idx)=>row[h]=values[idx]??'');
       data.push(row);
     }
-    return { headers, data };
+    return {headers, data};
   }
 
-  // Cargar TSV
-  async function loadTSV(url) {
-    $('badge').textContent = 'Cargando…';
-    $('badge').classList.add('loading');
-    try {
-      const res = await fetch(url, { cache: 'no-store' });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  // Mapea encabezados canónicos a reales si hay sinónimos
+  const SYNONYMS = {
+    precio:['precio','price','px'],
+    trades_total:['trades_total','trades','tx_total'],
+    comprados_total:['comprados_total','bought_total','buy_total'],
+    vendidos_total:['vendidos_total','sold_total','sell_total'],
+    vol_netx_total:['vol_netx_total','volume_netx_total','vol_total'],
+    vol_usdt_total:['vol_usdt_total','volume_usdt_total'],
+    fecha_ref:['fecha_ref','fecha','date','day']
+  };
+  function resolveHeader(headers, key){
+    const list = SYNONYMS[key]||[key];
+    for (const name of list){
+      const found = headers.find(h=>h.toLowerCase()===name.toLowerCase());
+      if (found) return found;
+    }
+    return null; // no encontrado
+  }
+
+  // Detecta exchanges a partir del patrón `${pfx}_trades` etc.
+  function detectExchanges(headers){
+    const set = new Set();
+    headers.forEach(h=>{
+      const m = h.match(/^(.*)_(trades|vendidos|comprados|vol_netx|vol_usdt)$/i);
+      if (m && !m[1].toLowerCase().includes('total')) set.add(m[1].toLowerCase());
+    });
+    // Devuelve array de prefijos ordenados alfabéticamente
+    return Array.from(set).sort();
+  }
+
+  // Carga TSV (con manejo de errores y localStorage)
+  async function loadTSV(url){
+    setStatus('Cargando…', true);
+    try{
+      const res = await fetch(url, {cache:'no-store'});
+      if(!res.ok) throw new Error(`HTTP ${res.status}`);
       const tsv = await res.text();
       DATA = parseTSV(tsv);
-      $('badge').textContent = `✓ ${DATA.data.length} registros`;
-      $('badge').classList.remove('loading');
+      EXCHANGES = detectExchanges(DATA.headers);
+      localStorage.setItem('netx.tsvUrl', url);
+      setStatus(`✓ ${DATA.data.length} registros · ${EXCHANGES.length} exchanges detectados`);
       renderAll();
-    } catch (error) {
-      $('badge').textContent = 'Error de carga';
-      $('badge').classList.remove('loading');
-      alert('Error al cargar los datos: ' + error.message);
-      console.error(error);
+    }catch(err){
+      console.error(err);
+      setStatus('Error de carga', false, err.message);
     }
   }
 
-  // Render completo
-  function renderAll() {
-    if (!DATA || !DATA.data.length) return;
-    const headers = DATA.headers;
-    const rows = DATA.data.map(o => headers.map(h => o[h]));
-    const last = rows[rows.length - 1] || [];
+  function setStatus(text, loading=false, detail=''){
+    $('badge').textContent = text;
+    $('badge').classList.toggle('loading', !!loading);
+    $('badge').title = detail || '';
+    $('msg').textContent = detail || '';
+  }
 
-    // Conversión texto → número (formato español)
-    const toNum = x => {
-      if (x == null || x === '') return null;
-      const s = x.toString().trim().replace(/\./g, '').replace(',', '.');
-      const n = parseFloat(s);
-      return isFinite(n) ? n : null;
-    };
+  // Render principal
+  function renderAll(){
+    if(!DATA || !DATA.data.length) return;
+    const H = DATA.headers; // alias
+    const rows = DATA.data.map(o=>H.map(h=>o[h]));
+    const last = rows[rows.length-1] || [];
 
-    // KPIs con nombres EXACTOS de tu TSV
-    const precio   = toNum(last[headers.indexOf('precio')]);
-    const trades   = toNum(last[headers.indexOf('trades_total')]);
-    const comprados= toNum(last[headers.indexOf('comprados_total')]);
-    const vendidos = toNum(last[headers.indexOf('vendidos_total')]);
-    const volNetx  = toNum(last[headers.indexOf('vol_netx_total')]);
-    const volUsdt  = toNum(last[headers.indexOf('vol_usdt_total')]);
-    const fecha    = last[headers.indexOf('fecha_ref')] || '—';
+    // Resuelve headers canónicos
+    const H_px   = resolveHeader(H,'precio');
+    const H_tt   = resolveHeader(H,'trades_total');
+    const H_bt   = resolveHeader(H,'comprados_total');
+    const H_st   = resolveHeader(H,'vendidos_total');
+    const H_vnt  = resolveHeader(H,'vol_netx_total');
+    const H_vut  = resolveHeader(H,'vol_usdt_total');
+    const H_date = resolveHeader(H,'fecha_ref');
 
-    $('kpiPrecio').textContent   = precio   != null ? '$' + fmt2.format(precio)   : '—';
-    $('kpiTrades').textContent   = trades   != null ? fmt.format(trades)          : '—';
-    $('kpiComprados').textContent= comprados!= null ? fmt.format(comprados)       : '—';
-    $('kpiVendidos').textContent = vendidos != null ? fmt.format(vendidos)        : '—';
-    $('kpiVolNetx').textContent  = volNetx  != null ? fmt.format(volNetx)         : '—';
-    $('kpiVolUsdt').textContent  = volUsdt  != null ? fmt.format(volUsdt)         : '—';
+    const idx = h => H.indexOf(h);
 
-    // Tabla por exchange
+    // KPIs
+    const precio   = toNum(last[idx(H_px)]);
+    const trades   = toNum(last[idx(H_tt)]);
+    const comprados= toNum(last[idx(H_bt)]);
+    const vendidos = toNum(last[idx(H_st)]);
+    const volNetx  = toNum(last[idx(H_vnt)]);
+    const volUsdt  = toNum(last[idx(H_vut)]);
+    const fecha    = last[idx(H_date)] || '—';
+
+    $('kpiPrecio').textContent    = precio   != null ? '$' + fmt2.format(precio) : '—';
+    $('kpiTrades').textContent    = trades   != null ? fmt.format(trades)        : '—';
+    $('kpiComprados').textContent = comprados!= null ? fmt.format(comprados)     : '—';
+    $('kpiVendidos').textContent  = vendidos != null ? fmt.format(vendidos)      : '—';
+    $('kpiVolNetx').textContent   = volNetx  != null ? fmt.format(volNetx)       : '—';
+    $('kpiVolUsdt').textContent   = volUsdt  != null ? fmt.format(volUsdt)       : '—';
+
+    // Tabla por exchange (dinámica)
     const exT = $('tblEx').querySelector('tbody');
-    exT.innerHTML = '';
-    const addRow = (name, pfx) => {
+    exT.innerHTML='';
+    const exRows = [];
+    for(const pfx of EXCHANGES){
       const r = document.createElement('tr');
-      r.innerHTML = `
-        <td>${name}</td>
-        <td>${fmt.format(toNum(last[headers.indexOf(pfx+'_trades')]) || 0)}</td>
-        <td>${fmt.format(toNum(last[headers.indexOf(pfx+'_vendidos')]) || 0)}</td>
-        <td>${fmt.format(toNum(last[headers.indexOf(pfx+'_comprados')]) || 0)}</td>
-        <td>${fmt.format(toNum(last[headers.indexOf(pfx+'_vol_netx')]) || 0)}</td>
-        <td>${fmt.format(toNum(last[headers.indexOf(pfx+'_vol_usdt')]) || 0)}</td>`;
+      const nm = DISPLAY_NAME[pfx] || pfx.toUpperCase();
+      const v = (suf)=>{const h=`${pfx}_${suf}`;const id=H.indexOf(h);return id>=0?toNum(last[id])||0:0;};
+      const rec = {exchange:nm,trades:v('trades'),vendidos:v('vendidos'),comprados:v('comprados'),vol_netx:v('vol_netx'),vol_usdt:v('vol_usdt')};
+      exRows.push(rec);
+      r.innerHTML = `<td>${nm}</td>
+        <td>${fmt.format(rec.trades)}</td>
+        <td>${fmt.format(rec.vendidos)}</td>
+        <td>${fmt.format(rec.comprados)}</td>
+        <td>${fmt.format(rec.vol_netx)}</td>
+        <td>${fmt.format(rec.vol_usdt)}</td>`;
       exT.appendChild(r);
-    };
-    addRow('MEXC', 'mexc');
-    addRow('Gate.io', 'gate');
+    }
 
     // Fecha
     $('lblFecha').textContent = 'Último registro: ' + fecha;
 
-    // Gráfico
-    const priceData = rows.map(r => toNum(r[headers.indexOf('precio')]));
-    const volData   = rows.map(r => toNum(r[headers.indexOf('vol_netx_total')]));
-    const labels    = rows.map(r => r[headers.indexOf('fecha_ref')] || '');
-    if (CHART) CHART.destroy();
-    CHART = new Chart($('chart').getContext('2d'), {
-      type: 'line',
-      data: {
+    // Gráfico (precio línea + volumen barras)
+    const priceData = rows.map(r=>toNum(r[idx(H_px)]));
+    const volData   = rows.map(r=>toNum(r[idx(H_vnt)]));
+    const labels    = rows.map(r=>r[idx(H_date)]||'');
+    if(CHART) CHART.destroy();
+    CHART = new Chart($('chart').getContext('2d'),{
+      type:'line',
+      data:{
         labels,
-        datasets: [
-          { label: 'Precio $NETX', data: priceData, yAxisID: 'y', borderColor: '#00e0ff', backgroundColor: 'rgba(0,224,255,0.1)', tension: 0.25, borderWidth: 2, pointRadius: 3, pointBackgroundColor: '#00e0ff' },
-          { label: 'Vol. $NETX (total)', data: volData, yAxisID: 'y1', type: 'bar', backgroundColor: 'rgba(42,211,155,0.6)', borderColor: '#2ad39b', borderWidth: 0 }
+        datasets:[
+          {label:'Precio $NETX', data:priceData, yAxisID:'y', borderColor:'#00e0ff', backgroundColor:'rgba(0,224,255,0.1)', tension:0.25, borderWidth:2, pointRadius:0},
+          {label:'Vol. $NETX (total)', data:volData, yAxisID:'y1', type:'bar', backgroundColor:'rgba(42,211,155,0.6)', borderColor:'#2ad39b', borderWidth:0}
         ]
       },
-      options: {
-        responsive: true,
-        interaction: { mode: 'index', intersect: false },
-        scales: {
-          y: { position: 'left', grid: { color: '#1b2a4a' }, ticks: { color: '#9fb3ff' } },
-          y1: { position: 'right', grid: { drawOnChartArea: false }, ticks: { color: '#9fb3ff' } },
-          x: { grid: { color: '#1b2a4a' }, ticks: { color: '#9fb3ff' } }
+      options:{
+        responsive:true,
+        animation:false,
+        interaction:{mode:'index',intersect:false},
+        scales:{
+          y:{position:'left', grid:{color:'#1b2a4a'}, ticks:{color:'#9fb3ff'}},
+          y1:{position:'right', grid:{drawOnChartArea:false}, ticks:{color:'#9fb3ff'}},
+          x:{grid:{color:'#1b2a4a'}, ticks:{color:'#9fb3ff'}}
         },
-        plugins: { legend: { labels: { color: '#cfe3ff' } }, tooltip: { backgroundColor: 'rgba(13,27,48,0.9)', titleColor: '#cfe3ff', bodyColor: '#9fb3ff', borderColor: '#2b3a66', borderWidth: 1 } }
+        plugins:{legend:{labels:{color:'#cfe3ff'}}, tooltip:{backgroundColor:'rgba(13,27,48,0.9)', titleColor:'#cfe3ff', bodyColor:'#9fb3ff', borderColor:'#2b3a66', borderWidth:1}}
       }
     });
 
     // Tabla histórica
     const tHead = $('tblAll').querySelector('thead');
     const tBody = $('tblAll').querySelector('tbody');
-    tHead.innerHTML = '<tr>' + headers.map(h => `<th>${h}</th>`).join('') + '</tr>';
-    tBody.innerHTML = rows.map(r => '<tr>' + r.map(c => `<td>${c == null ? '' : c}</td>`).join('') + '</tr>').join('');
+    tHead.innerHTML = '<tr>' + H.map((h,i)=>`<th data-index="${i}">${h}</th>`).join('') + '</tr>';
+    tBody.innerHTML = rows.map(r=>'<tr>'+r.map(c=>`<td>${c==null?'':c}</td>`).join('')+'</tr>').join('');
+
+    // Activar ordenación
+    enableSort('tblEx');
+    enableSort('tblAll', true);
   }
 
-  // Demo
-  function loadDemo() {
+  // Ordenación por click en th (numérica o texto)
+  function enableSort(tableId, big=false){
+    const table = $(tableId);
+    const ths = table.querySelectorAll('thead th');
+    ths.forEach((th, colIndex)=>{
+      th.onclick = ()=>{
+        const tbody = table.querySelector('tbody');
+        const rows = Array.from(tbody.querySelectorAll('tr'));
+        const cur = th.getAttribute('data-order') || 'desc';
+        const next = cur === 'asc' ? 'desc' : 'asc';
+        ths.forEach(x=>x.removeAttribute('data-order'));
+        th.setAttribute('data-order', next);
+        const idx = big ? parseInt(th.getAttribute('data-index')) : colIndex;
+        rows.sort((a,b)=>{
+          const ta=a.children[idx]?.textContent?.trim()||'';
+          const tb=b.children[idx]?.textContent?.trim()||'';
+          const na=toNum(ta); const nb=toNum(tb);
+          let cmp = 0;
+          if(na!=null && nb!=null){ cmp = na-nb; }
+          else { cmp = ta.localeCompare(tb, 'es', {numeric:true, sensitivity:'base'}); }
+          return next==='asc'?cmp:-cmp;
+        });
+        rows.forEach(r=>tbody.appendChild(r));
+      };
+    });
+  }
+
+  // Exporta la tabla histórica a CSV
+  function exportHistoryCSV(){
+    if(!DATA) return;
+    const H = DATA.headers; const rows = DATA.data.map(o=>H.map(h=>o[h]??''));
+    const esc = v => '"'+String(v).replace(/"/g,'""')+'"';
+    const csv = [H.map(esc).join(','), ...rows.map(r=>r.map(esc).join(','))].join('\n');
+    const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `netx_hist_${new Date().toISOString().slice(0,10)}.csv`;
+    document.body.appendChild(a); a.click(); a.remove();
+  }
+
+  // Filtro rápido de la tabla histórica
+  function applyFilter(){
+    const q = $('txtFilterAll').value.toLowerCase();
+    const rows = $('tblAll').querySelectorAll('tbody tr');
+    rows.forEach(tr=>{
+      const hit = tr.textContent.toLowerCase().includes(q);
+      tr.style.display = hit ? '' : 'none';
+    });
+  }
+
+  // Demo mínima (compatible con detección dinámica)
+  function loadDemo(){
     DATA = {
-      headers: ['fecha_ref', 'precio', 'mexc_trades', 'mexc_vendidos', 'mexc_comprados', 'mexc_vol_netx', 'mexc_vol_usdt', 'gate_trades', 'gate_vendidos', 'gate_comprados', 'gate_vol_netx', 'gate_vol_usdt', 'trades_total', 'vendidos_total', 'comprados_total', 'vol_netx_total', 'vol_usdt_total', 'dominan', 'diferencia_netx'],
-      data: [
-        { fecha_ref: '2025-09-15', precio: '1,44', mexc_trades: '6811', mexc_vendidos: '120347,13', mexc_comprados: '97690,49', mexc_vol_netx: '218037,62', mexc_vol_usdt: '297425,5629', gate_trades: '6668', gate_vendidos: '51524', gate_comprados: '36262,5', gate_vol_netx: '87786,5', gate_vol_usdt: '119627,3799', trades_total: '13479', vendidos_total: '171871,13', comprados_total: '133952,99', vol_netx_total: '305824,12', vol_usdt_total: '417052,9428', dominan: 'Vendedores', diferencia_netx: '37918,14' }
+      headers:['fecha_ref','precio','mexc_trades','mexc_vendidos','mexc_comprados','mexc_vol_netx','mexc_vol_usdt','gate_trades','gate_vendidos','gate_comprados','gate_vol_netx','gate_vol_usdt','trades_total','vendidos_total','comprados_total','vol_netx_total','vol_usdt_total','dominan','diferencia_netx'],
+      data:[
+        {fecha_ref:'2025-09-14', precio:'1,40', mexc_trades:'6200', mexc_vendidos:'105000', mexc_comprados:'98000', mexc_vol_netx:'203000', mexc_vol_usdt:'284200', gate_trades:'6100', gate_vendidos:'50000', gate_comprados:'36000', gate_vol_netx:'86000', gate_vol_usdt:'119000', trades_total:'12300', vendidos_total:'155000', comprados_total:'134000', vol_netx_total:'289000', vol_usdt_total:'403200', dominan:'Vendedores', diferencia_netx:'21000'},
+        {fecha_ref:'2025-09-15', precio:'1,44', mexc_trades:'6811', mexc_vendidos:'120347,13', mexc_comprados:'97690,49', mexc_vol_netx:'218037,62', mexc_vol_usdt:'297425,5629', gate_trades:'6668', gate_vendidos:'51524', gate_comprados:'36262,5', gate_vol_netx:'87786,5', gate_vol_usdt:'119627,3799', trades_total:'13479', vendidos_total:'171871,13', comprados_total:'133952,99', vol_netx_total:'305824,12', vol_usdt_total:'417052,9428', dominan:'Vendedores', diferencia_netx:'37918,14'}
       ]
     };
-    $('badge').textContent = 'Demo';
-    $('badge').classList.remove('loading');
+    EXCHANGES = detectExchanges(DATA.headers);
+    setStatus('Demo cargada');
     renderAll();
   }
 
-  // Eventos
-  $('btnUrl').onclick = () => { const u = $('txtUrl').value.trim(); if (u) loadTSV(u); };
-  $('btnRefresh').onclick = () => { const u = $('txtUrl').value.trim(); if (u) loadTSV(u); };
+  // Auto-actualización con <select>
+  function scheduleAutoRefresh(){
+    const seconds = parseInt($('selAuto').value,10)||0;
+    if (AUTO_ID){ clearInterval(AUTO_ID); AUTO_ID=null; }
+    if (seconds>0){
+      AUTO_ID = setInterval(()=>{
+        const u = $('txtUrl').value.trim(); if (u) loadTSV(u);
+      }, seconds*1000);
+    }
+  }
+
+  // Eventos UI
+  $('btnUrl').onclick = ()=>{const u=$('txtUrl').value.trim(); if(u) loadTSV(u); };
+  $('btnRefresh').onclick = ()=>{const u=$('txtUrl').value.trim(); if(u) loadTSV(u); };
   $('btnDemo').onclick = loadDemo;
+  $('btnExport').onclick = exportHistoryCSV;
+  $('selAuto').onchange = scheduleAutoRefresh;
+  $('txtFilterAll').oninput = applyFilter;
+
+  // Persistencia de URL
+  (function(){
+    const saved = localStorage.getItem('netx.tsvUrl');
+    if (saved) $('txtUrl').value = saved;
+  })();
 
   // Auto-carga inicial
-  window.addEventListener('load', () => {
+  window.addEventListener('load', ()=>{
     const u = $('txtUrl').value.trim();
-    if (u) setTimeout(() => loadTSV(u), 300);
+    if(u) setTimeout(()=>loadTSV(u), 300);
+    scheduleAutoRefresh();
   });
 </script>
 </body>
 </html>
+
+
