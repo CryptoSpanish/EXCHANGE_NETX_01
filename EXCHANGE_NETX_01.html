@@ -9,7 +9,27 @@
 <style>
   :root{--bg0:#0c1220;--bg1:#131b2f;--panel:rgba(22,30,52,.85);--ink:#dfe7ff;--mut:#8ea0d3;--green:#2ad39b;--red:#ff5777;--cyan:#00e0ff;--border-color:#1b2440;--hover-bg:#0e1632}
   html,body{height:100%}
-  body{margin:0;color:var(--ink);background:radial-gradient(1200px 600px at 90% -10%,rgba(94,208,255,.10),transparent 60%),radial-gradient(1000px 500px at -20% 0%,rgba(42,211,155,.08),transparent 60%),linear-gradient(180deg,var(--bg0),var(--bg1));font-family:Oxanium,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+  
+  @keyframes futuristic-background {
+    0% { background-position: 90% -10%, -20% 0%; }
+    50% { background-position: -10% 110%, 120% 100%; }
+    100% { background-position: 90% -10%, -20% 0%; }
+  }
+
+  body{
+    margin:0;
+    color:var(--ink);
+    background-color: var(--bg1); /* Fallback */
+    background-image: 
+      radial-gradient(1200px 600px, rgba(94,208,255,.10), transparent 60%),
+      radial-gradient(1000px 500px, rgba(42,211,155,.08), transparent 60%),
+      linear-gradient(180deg,var(--bg0),var(--bg1));
+    background-repeat: no-repeat;
+    background-size: auto, auto, 100% 100%;
+    font-family:Oxanium,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+    animation: futuristic-background 25s ease-in-out infinite;
+  }
+
   .wrap{max-width:1250px;margin:22px auto;padding:0 14px}
   .card{background:var(--panel);border:1px solid var(--border-color);border-radius:14px;padding:18px;box-shadow:0 10px 30px rgba(0,0,0,.35),inset 0 0 0 1px rgba(255,255,255,.03);backdrop-filter:saturate(120%) blur(6px)}
   .title{display:flex;gap:10px;align-items:center;margin:0 0 12px}
@@ -303,7 +323,6 @@
     $('kpiComprados').textContent = fmt.format(sum(H_bt));
     $('kpiVendidos').textContent = fmt.format(sum(H_st));
     $('kpiVolNetx').textContent = volNetxSum != null ? fmt.format(volNetxSum) : '—';
-    // MODIFICADO: Se usa un espacio de no ruptura (&nbsp;)
     $('kpiVolUsdt').innerHTML = volUsdtSum != null ? `${fmt.format(volUsdtSum)}&nbsp;$` : '—';
   }
 
@@ -317,7 +336,6 @@
         if (!headers.includes(header)) return 0;
         return data.reduce((acc, row) => acc + (toNum(row[header]) || 0), 0);
       };
-      // MODIFICADO: Se usa un espacio de no ruptura (&nbsp;)
       return `<tr>
         <td>${nm}</td>
         <td>${fmt.format(sumBySuffix('trades'))}</td>
@@ -342,8 +360,45 @@
 
     if (CHART) CHART.destroy();
     CHART = new Chart($('chart').getContext('2d'), {
-      type: 'line', data: { labels, datasets: [ { label: 'Precio $NETX', data: priceData, yAxisID: 'y', borderColor: '#00e0ff', backgroundColor: 'rgba(0,224,255,0.1)', tension: 0.25, borderWidth: 2, pointRadius: 0 }, { label: 'Vol. $NETX (total)', data: volData, yAxisID: 'y1', type: 'bar', backgroundColor: 'rgba(42,211,155,0.6)', borderColor: '#2ad39b', borderWidth: 0 } ] },
-      options: { responsive: true, animation: false, interaction: { mode: 'index', intersect: false }, scales: { y: { position: 'left', grid: { color: '#1b2a4a' }, ticks: { color: '#9fb3ff' } }, y1: { position: 'right', grid: { drawOnChartArea: false }, ticks: { color: '#9fb3ff' } }, x: { grid: { color: '#1b2a4a' }, ticks: { color: '#9fb3ff' } } }, plugins: { legend: { labels: { color: '#cfe3ff' } }, tooltip: { backgroundColor: 'rgba(13,27,48,0.9)', titleColor: '#cfe3ff', bodyColor: '#9fb3ff', borderColor: '#2b3a66', borderWidth: 1 } } }
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          { label: 'Precio $NETX', data: priceData, yAxisID: 'y', borderColor: '#00e0ff', backgroundColor: 'rgba(0,224,255,0.1)', tension: 0.25, borderWidth: 2, pointRadius: 0 },
+          { label: 'Vol. $NETX (total)', data: volData, yAxisID: 'y1', type: 'bar', backgroundColor: 'rgba(42,211,155,0.6)', borderColor: '#2ad39b', borderWidth: 0 }
+        ]
+      },
+      options: {
+        responsive: true,
+        animation: false,
+        interaction: { mode: 'index', intersect: false },
+        scales: {
+          y: { position: 'left', grid: { color: '#1b2a4a' }, ticks: { color: '#9fb3ff' } },
+          y1: { position: 'right', grid: { drawOnChartArea: false }, ticks: { color: '#9fb3ff' } },
+          x: { grid: { color: '#1b2a4a' }, ticks: { color: '#9fb3ff' } }
+        },
+        plugins: {
+          legend: { labels: { color: '#cfe3ff' } },
+          tooltip: {
+            backgroundColor: 'rgba(13,27,48,0.9)',
+            titleColor: '#cfe3ff',
+            bodyColor: '#9fb3ff',
+            borderColor: '#2b3a66',
+            borderWidth: 1,
+            callbacks: {
+              label: function(context) {
+                let label = context.dataset.label || '';
+                if (label) { label += ': '; }
+                if (context.parsed.y !== null) {
+                  const isPrice = context.dataset.yAxisID === 'y';
+                  label += isPrice ? '$' + fmt2.format(context.parsed.y) : fmt.format(context.parsed.y);
+                }
+                return label;
+              }
+            }
+          }
+        }
+      }
     });
   }
 
@@ -375,10 +430,14 @@
         } else {
           const numValue = toNum(value);
           if (numValue != null) {
-            if (lowerH.includes('precio')) formattedValue = '$' + fmt2.format(numValue);
-            // MODIFICADO: Se usa un espacio de no ruptura (&nbsp;)
-            else if (lowerH.includes('usdt')) { formattedValue = `${fmt.format(numValue)}&nbsp;$`; className = 'class="text-cyan"'; }
-            else formattedValue = fmt.format(numValue);
+            if (lowerH.includes('precio')) {
+              formattedValue = '$' + fmt2.format(numValue);
+            } else if (lowerH.includes('usdt')) {
+              formattedValue = `${fmt.format(numValue)}&nbsp;$`;
+              className = 'class="text-cyan"';
+            } else {
+              formattedValue = fmt.format(numValue);
+            }
           }
         }
         if (lowerH.includes('comprados')) className = 'class="text-green"';
@@ -492,11 +551,4 @@
 
 </body>
 </html>
-
-
-
-
-
-
-
 
