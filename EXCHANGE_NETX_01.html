@@ -3,22 +3,19 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>NETX • Quantum Dashboard</title>
+<title>NETX • Quantum Dashboard (Mejorado)</title>
 <link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@300;400;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
-  :root{--bg0:#0c1220;--bg1:#131b2f;--panel:rgba(22,30,52,.85);--ink:#dfe7ff;--mut:#8ea0d3;--green:#2ad39b;--red:#ff5777;--cyan:#00e0ff}
+  :root{--bg0:#0c1220;--bg1:#131b2f;--panel:rgba(22,30,52,.85);--ink:#dfe7ff;--mut:#8ea0d3;--green:#2ad39b;--red:#ff5777;--cyan:#00e0ff;--border-color:#1b2440;--hover-bg:#0e1632}
   html,body{height:100%}
-  body{margin:0;color:var(--ink);background:
-    radial-gradient(1200px 600px at 90% -10%,rgba(94,208,255,.10),transparent 60%),
-    radial-gradient(1000px 500px at -20% 0%,rgba(42,211,155,.08),transparent 60%),
-    linear-gradient(180deg,var(--bg0),var(--bg1));font-family:Oxanium,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+  body{margin:0;color:var(--ink);background:radial-gradient(1200px 600px at 90% -10%,rgba(94,208,255,.10),transparent 60%),radial-gradient(1000px 500px at -20% 0%,rgba(42,211,155,.08),transparent 60%),linear-gradient(180deg,var(--bg0),var(--bg1));font-family:Oxanium,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
   .wrap{max-width:1250px;margin:22px auto;padding:0 14px}
-  .card{background:var(--panel);border:1px solid #1b2440;border-radius:14px;padding:18px;box-shadow:0 10px 30px rgba(0,0,0,.35),inset 0 0 0 1px rgba(255,255,255,.03);backdrop-filter:saturate(120%) blur(6px)}
+  .card{background:var(--panel);border:1px solid var(--border-color);border-radius:14px;padding:18px;box-shadow:0 10px 30px rgba(0,0,0,.35),inset 0 0 0 1px rgba(255,255,255,.03);backdrop-filter:saturate(120%) blur(6px)}
   .title{display:flex;gap:10px;align-items:center;margin:0 0 12px}
   .title .dot{width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,#1f2a4a,#304170)}
   .title h1{font-size:26px;margin:0}
-  .pill{border:1px solid #2b3a66;color:#9fb3ff;background:rgba(30,45,86,.6);padding:6px 10px;border-radius:999px;font-size:12px}
+  .pill{border:1px solid #2b3a66;color:#9fb3ff;background:rgba(30,45,86,.6);padding:6px 10px;border-radius:999px;font-size:12px;user-select:none}
   .row{display:grid;gap:16px}
   .row.kpis{grid-template-columns:repeat(6,1fr)}
   .kpi h3{margin:0 0 6px;color:#9fb3ff;font-size:12px;text-transform:uppercase;letter-spacing:.5px}
@@ -27,14 +24,52 @@
   .grid-2{display:grid;grid-template-columns:2.1fr 1fr;gap:16px}
   canvas{background:#0c1326;border-radius:12px;border:1px solid #1a2444}
   table{width:100%;border-collapse:collapse;color:#cfe3ff;font-size:13px}
-  thead th{position:sticky;top:0;background:#0f1730;border-bottom:1px solid #2a3a66;padding:10px 8px;text-align:left;cursor:pointer;user-select:none}
+  thead th{position:sticky;top:0;background:#0f1730;border-bottom:1px solid #2a3a66;padding:10px 8px;text-align:left;cursor:pointer;user-select:none;transition:background-color .2s}
+  thead th:hover{background-color:var(--hover-bg)}
+  thead th[data-order]::after{content:'';display:inline-block;width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;margin-left:8px;vertical-align:middle;opacity:.7}
+  thead th[data-order="asc"]::after{border-bottom:5px solid var(--cyan)}
+  thead th[data-order="desc"]::after{border-top:5px solid var(--cyan)}
+
   tbody td{border-bottom:1px solid #172045;padding:8px 8px}
-  tbody tr:hover{background:#0e1632}
+  tbody tr:hover{background:var(--hover-bg)}
   .loading{animation:pulse 1.5s ease-in-out infinite}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
   .note{color:#9fb3ff;font-size:12px;margin-top:8px}
   .flex{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
   .spacer{flex:1}
+  
+  input#txtFilterAll{background:var(--bg0);border:1px solid #2b3a66;border-radius:8px;padding:8px 12px;color:var(--ink);font-family:inherit;font-size:14px;transition:border-color .2s}
+  input#txtFilterAll:focus{outline:none;border-color:var(--cyan)}
+  .btn{background:rgba(0,224,255,0.1);border:1px solid var(--cyan);color:var(--cyan);padding:6px 12px;border-radius:8px;cursor:pointer;font-family:inherit;font-size:14px;transition:all .2s ease}
+  .btn:hover{background:rgba(0,224,255,0.2);box-shadow:0 0 10px rgba(0,224,255,0.3)}
+
+  .text-green { color: var(--green); font-weight: 600; }
+  .text-red { color: var(--red); font-weight: 600; }
+  .text-cyan { color: var(--cyan); font-weight: 600; }
+
+  /* NUEVO: Contenedor de la tabla histórica */
+  .table-container {
+    border: 1px solid #172045;
+    border-radius: 12px;
+    overflow-x: auto; /* Mantiene el scroll horizontal por si acaso en pantallas muy pequeñas */
+  }
+
+  /* NUEVO: Estilos para paginación */
+  .pagination-controls {
+    justify-content: center;
+    margin-top: 16px;
+    user-select: none;
+  }
+  .pagination-controls .btn[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: transparent;
+  }
+  .pagination-info {
+    padding: 0 15px;
+    align-self: center;
+  }
+
   @media (max-width:1100px){.row.kpis{grid-template-columns:repeat(3,1fr)}.grid-2{grid-template-columns:1fr}}
   @media (max-width:640px){.row.kpis{grid-template-columns:repeat(2,1fr)}}
 </style>
@@ -51,7 +86,7 @@
   </div>
 
   <div class="row kpis" aria-label="Indicadores clave">
-    <div class="card kpi"><h3>PRECIO $NETX</h3><div id="kpiPrecio" class="v">—</div></div>
+    <div class="card kpi"><h3>SUMA PRECIOS $NETX</h3><div id="kpiPrecio" class="v">—</div></div>
     <div class="card kpi"><h3>TRADES TOTALES</h3><div id="kpiTrades" class="v">—</div></div>
     <div class="card kpi"><h3>$NETX COMPRADOS</h3><div id="kpiComprados" class="v green">—</div></div>
     <div class="card kpi"><h3>$NETX VENDIDOS</h3><div id="kpiVendidos" class="v red">—</div></div>
@@ -65,54 +100,34 @@
       <canvas id="chart" aria-label="Serie temporal de precio y volumen" role="img"></canvas>
     </div>
     <div class="card">
-      <div class="title"><div class="dot"></div><h1 style="font-size:18px">Detalle por exchange (última fila)</h1></div>
-      <table id="tblEx" aria-describedby="lblFecha">
+      <div class="title"><div class="dot"></div><h1 style="font-size:18px">Resumen por Exchange (Totales)</h1></div>
+      <table id="tblEx">
         <thead><tr><th>Exchange</th><th>Trades</th><th>Vendidos</th><th>Comprados</th><th>Vol. $NETX</th><th>Vol. USDT</th></tr></thead>
         <tbody></tbody>
       </table>
-      <div id="lblFecha" class="pill" style="display:inline-block;margin-top:10px">—</div>
     </div>
   </div>
 
   <div class="card" style="margin-top:16px">
-    <div class="flex title"><div class="dot"></div><h1 style="font-size:18px">Histórico (resúmenes diarios)</h1><div class="spacer"></div><input id="txtFilterAll" placeholder="Filtrar…" style="max-width:220px"/></div>
-    <div style="max-height:560px;overflow:auto;border:1px solid #172045;border-radius:12px">
+    <div class="flex title">
+      <div class="dot"></div><h1 style="font-size:18px">Histórico (resúmenes diarios)</h1>
+      <div class="spacer"></div>
+      <button id="btnRefresh" class="btn" title="Refrescar datos">Refrescar</button>
+      <input id="txtFilterAll" placeholder="Filtrar…" style="max-width:220px"/>
+    </div>
+    <!-- MODIFICADO: Se elimina el div con scroll y se añade un contenedor -->
+    <div class="table-container">
       <table id="tblAll" aria-label="Tabla histórica"><thead></thead><tbody></tbody></table>
     </div>
+    <!-- NUEVO: Controles de paginación -->
+    <div id="paginationControls" class="flex pagination-controls"></div>
   </div>
 </div>
 
 <script>
-  // Configuración: URL fija del TSV publicado
+  // --- CONFIGURACIÓN Y CONSTANTES ---
   const TSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTGjCTThPQ3rbhgN9WDwDvmDSwCpq-ue9AZTFZNF4AJa7dvmtds1D46tgAr3727jSGJcxgNCOVACFjk/pub?output=tsv";
-
-  // Utilidades de formato
-  const fmt  = new Intl.NumberFormat('es-ES',{maximumFractionDigits:0});
-  const fmt2 = new Intl.NumberFormat('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2});
-  const $ = id => document.getElementById(id);
-
-  let DATA=null, CHART=null, EXCHANGES=[];
-
   const DISPLAY_NAME = { mexc:'MEXC', gate:'Gate.io', binance:'Binance', okx:'OKX', bybit:'Bybit' };
-
-  function toNum(x){ if(x==null||x==='')return null; const s=x.toString().trim().replace(/\./g,'').replace(',', '.'); const n=parseFloat(s); return Number.isFinite(n)?n:null; }
-
-  // Parseador TSV
-  function parseTSV(tsv){
-    const lines = tsv.replace(/\r\n?/g,'\n').trim().split('\n');
-    if(!lines.length) return {headers:[], data:[]};
-    const headers = lines[0].split('\t').map(h=>h.trim());
-    const data=[];
-    for(let i=1;i<lines.length;i++){
-      if(!lines[i].trim()) continue;
-      const values = lines[i].split('\t');
-      const row={}; headers.forEach((h,idx)=>row[h]=values[idx]??'');
-      data.push(row);
-    }
-    return {headers, data};
-  }
-
-  // Sinónimos para encabezados canónicos
   const SYNONYMS = {
     precio:['precio','price','px'],
     trades_total:['trades_total','trades','tx_total'],
@@ -122,202 +137,322 @@
     vol_usdt_total:['vol_usdt_total','volume_usdt_total'],
     fecha_ref:['fecha_ref','fecha','date','day']
   };
-  function resolveHeader(headers,key){
-    const list=SYNONYMS[key]||[key];
-    for(const name of list){
-      const f=headers.find(h=>h.toLowerCase()===name.toLowerCase());
-      if(f) return f;
-    }
-    return null;
-  }
 
-  // Detecta exchanges por patrón
-  function detectExchanges(headers){
-    const set=new Set();
-    headers.forEach(h=>{
-      const m=h.match(/^(.*)_(trades|vendidos|comprados|vol_netx|vol_usdt)$/i);
-      if(m && !m[1].toLowerCase().includes('total')) set.add(m[1].toLowerCase());
-    });
-    return Array.from(set).sort();
-  }
+  // --- VARIABLES DE ESTADO GLOBAL ---
+  let DATA = null;
+  let CHART = null;
+  let EXCHANGES = [];
+  // NUEVO: Variables para paginación de la tabla histórica
+  let HIST_FILTERED_DATA = [];
+  let currentPage = 1;
+  const rowsPerPage = 10;
 
-  // Carga TSV
-  async function loadTSV(url){
+  // --- UTILIDADES ---
+  const fmt = new Intl.NumberFormat('es-ES', { maximumFractionDigits: 0 });
+  const fmt2 = new Intl.NumberFormat('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const $ = id => document.getElementById(id);
+  const toNum = (x) => {
+    if (x == null || x === '') return null;
+    const s = x.toString().trim().replace(/\./g, '').replace(',', '.');
+    const n = parseFloat(s);
+    return Number.isFinite(n) ? n : null;
+  };
+  
+  const formatDate = (dateStr) => {
+    if (!dateStr) return '';
+    const date = new Date(dateStr + 'T00:00:00');
+    if (isNaN(date.getTime())) return dateStr;
+    const shortMonth = date.toLocaleDateString('es-ES', { month: 'short' });
+    return `${date.getDate()} ${shortMonth.charAt(0).toUpperCase() + shortMonth.slice(1).replace('.','')}`;
+  };
+
+  const formatHeaderTitle = (header) => {
+    if (!header) return '';
+    return header
+      .replace(/_/g, ' ')
+      .replace(/\b\w/g, l => l.toUpperCase())
+      .replace(/Usdt/g, 'USDT')
+      .replace(/Netx/g, 'NETX');
+  };
+
+  // --- LÓGICA PRINCIPAL ---
+
+  async function loadTSV(url) {
     setStatus('Cargando…', true);
-    try{
-      const res=await fetch(url,{cache:'no-store'});
-      if(!res.ok) throw new Error(`HTTP ${res.status}`);
-      const tsv=await res.text();
-      DATA=parseTSV(tsv);
-      EXCHANGES=detectExchanges(DATA.headers);
-      setStatus(`✓ ${DATA.data.length} registros · ${EXCHANGES.length} exchanges detectados`);
+    try {
+      const res = await fetch(url, { cache: 'no-store' });
+      if (!res.ok) throw new Error(`Error HTTP ${res.status}`);
+      const tsv = await res.text();
+      const parsed = parseTSV(tsv);
+      if (!parsed || !parsed.data.length) throw new Error("No se encontraron datos válidos.");
+      
+      DATA = parsed;
+      HIST_FILTERED_DATA = [...DATA.data]; // Copia inicial para filtrado/paginación
+      EXCHANGES = detectExchanges(DATA.headers);
+      
+      setStatus(`✓ ${DATA.data.length} registros · ${EXCHANGES.length} exchanges detectados`, false, `Actualizado: ${new Date().toLocaleTimeString()}`);
       renderAll();
-    }catch(err){
+    } catch (err) {
       console.error(err);
       setStatus('Error de carga', false, err.message);
     }
   }
 
-  function setStatus(text,loading=false,detail=''){
-    $('badge').textContent=text;
-    $('badge').classList.toggle('loading', !!loading);
-    $('badge').title=detail||'';
-    $('msg').textContent=detail||'';
+  function parseTSV(tsv) {
+    const lines = tsv.replace(/\r\n?/g, '\n').trim().split('\n');
+    if (lines.length < 2) return null;
+    const headers = lines[0].split('\t').map(h => h.trim());
+    const data = lines.slice(1).map(line => {
+      if (!line.trim()) return null;
+      const values = line.split('\t');
+      const row = {};
+      headers.forEach((h, idx) => row[h] = values[idx] ?? '');
+      return row;
+    }).filter(Boolean);
+    return { headers, data };
   }
-
-  // Suma de columna (acumulado de todos los días)
-  function sumByHeader(H, rows, headerName){
-    if(!headerName) return null;
-    const i=H.indexOf(headerName);
-    if(i<0) return null;
-    let s=0, found=false;
-    for(const r of rows){
-      const n=toNum(r[i]);
-      if(n!=null){ s+=n; found=true; }
-    }
-    return found ? s : null;
-  }
-
-  // Render principal
-  function renderAll(){
-    if(!DATA||!DATA.data.length) return;
-    const H=DATA.headers;
-    const rows=DATA.data.map(o=>H.map(h=>o[h]));
-    const last=rows[rows.length-1]||[];
-
-    // Headers canónicos
-    const H_px   = resolveHeader(H,'precio');
-    const H_tt   = resolveHeader(H,'trades_total');
-    const H_bt   = resolveHeader(H,'comprados_total');
-    const H_st   = resolveHeader(H,'vendidos_total');
-    const H_vnt  = resolveHeader(H,'vol_netx_total');
-    const H_vut  = resolveHeader(H,'vol_usdt_total');
-    const H_date = resolveHeader(H,'fecha_ref');
-
-    const idx = h => H.indexOf(h);
-
-    // KPI precio (última fila)
-    const precio = toNum(last[idx(H_px)]);
-
-    // KPI acumulados solicitados (sumatoria de todos los días)
-    const tradesSum    = sumByHeader(H, rows, H_tt);
-    const compradosSum = sumByHeader(H, rows, H_bt);
-    const vendidosSum  = sumByHeader(H, rows, H_st);
-
-    // Volúmenes (última fila)
-    const volNetx = toNum(last[idx(H_vnt)]);
-    const volUsdt = toNum(last[idx(H_vut)]);
-    const fecha   = last[idx(H_date)] || '—';
-
-    $('kpiPrecio').textContent    = precio   != null ? '$' + fmt2.format(precio) : '—';
-    $('kpiTrades').textContent    = tradesSum!= null ? fmt.format(tradesSum)      : '—';
-    $('kpiComprados').textContent = compradosSum!=null? fmt.format(compradosSum)  : '—';
-    $('kpiVendidos').textContent  = vendidosSum!= null? fmt.format(vendidosSum)   : '—';
-    $('kpiVolNetx').textContent   = volNetx  != null ? fmt.format(volNetx)        : '—';
-    $('kpiVolUsdt').textContent   = volUsdt  != null ? fmt.format(volUsdt)        : '—';
-
-    // Tabla por exchange (última fila)
-    const exT=$('tblEx').querySelector('tbody');
-    exT.innerHTML='';
-    for(const pfx of EXCHANGES){
-      const r=document.createElement('tr');
-      const nm=DISPLAY_NAME[pfx]||pfx.toUpperCase();
-      const v=(suf)=>{const h=`${pfx}_${suf}`;const id=H.indexOf(h);return id>=0?toNum(last[id])||0:0;};
-      r.innerHTML = `<td>${nm}</td>
-        <td>${fmt.format(v('trades'))}</td>
-        <td>${fmt.format(v('vendidos'))}</td>
-        <td>${fmt.format(v('comprados'))}</td>
-        <td>${fmt.format(v('vol_netx'))}</td>
-        <td>${fmt.format(v('vol_usdt'))}</td>`;
-      exT.appendChild(r);
-    }
-
-    // Fecha
-    $('lblFecha').textContent='Último registro: '+fecha;
-
-    // Gráfico
-    const priceData = rows.map(r=>toNum(r[idx(H_px)]));
-    const volData   = rows.map(r=>toNum(r[idx(H_vnt)]));
-    const labels    = rows.map(r=>r[idx(H_date)]||'');
-    if(CHART) CHART.destroy();
-    CHART = new Chart($('chart').getContext('2d'), {
-      type:'line',
-      data:{
-        labels,
-        datasets:[
-          { label:'Precio $NETX', data:priceData, yAxisID:'y',
-            borderColor:'#00e0ff', backgroundColor:'rgba(0,224,255,0.1)',
-            tension:0.25, borderWidth:2, pointRadius:0 },
-          { label:'Vol. $NETX (total)', data:volData, yAxisID:'y1', type:'bar',
-            backgroundColor:'rgba(42,211,155,0.6)', borderColor:'#2ad39b', borderWidth:0 }
-        ]
-      },
-      options:{
-        responsive:true, animation:false,
-        interaction:{mode:'index',intersect:false},
-        scales:{
-          y:{position:'left', grid:{color:'#1b2a4a'}, ticks:{color:'#9fb3ff'}},
-          y1:{position:'right', grid:{drawOnChartArea:false}, ticks:{color:'#9fb3ff'}},
-          x:{grid:{color:'#1b2a4a'}, ticks:{color:'#9fb3ff'}}
-        },
-        plugins:{legend:{labels:{color:'#cfe3ff'}}, tooltip:{backgroundColor:'rgba(13,27,48,0.9)', titleColor:'#cfe3ff', bodyColor:'#9fb3ff', borderColor:'#2b3a66', borderWidth:1}}
-      }
+  
+  function detectExchanges(headers) {
+    const set = new Set();
+    headers.forEach(h => {
+      const m = h.match(/^(.*)_(trades|vendidos|comprados|vol_netx|vol_usdt)$/i);
+      if (m && !m[1].toLowerCase().includes('total')) set.add(m[1].toLowerCase());
     });
-
-    // Tabla histórica
-    const tHead=$('tblAll').querySelector('thead');
-    const tBody=$('tblAll').querySelector('tbody');
-    tHead.innerHTML='<tr>'+H.map((h,i)=>`<th data-index="${i}">${h}</th>`).join('')+'</tr>';
-    tBody.innerHTML = rows.map(r => '<tr>'+r.map(c=>`<td>${c==null?'':c}</td>`).join('')+'</tr>').join('');
-
-    // Ordenación
-    enableSort('tblEx');
-    enableSort('tblAll', true);
+    return Array.from(set).sort();
+  }
+  
+  function resolveHeader(headers, key) {
+    const list = SYNONYMS[key] || [key];
+    return list.map(name => headers.find(h => h.toLowerCase() === name.toLowerCase())).find(Boolean) || null;
   }
 
-  // Ordenación por encabezado
-  function enableSort(tableId, big=false){
-    const table=$(tableId);
-    const ths=table.querySelectorAll('thead th');
-    ths.forEach((th,colIndex)=>{
-      th.onclick=()=>{
-        const tbody=table.querySelector('tbody');
-        const rows=Array.from(tbody.querySelectorAll('tr'));
-        const cur=th.getAttribute('data-order')||'desc';
-        const next=cur==='asc'?'desc':'asc';
-        ths.forEach(x=>x.removeAttribute('data-order'));
-        th.setAttribute('data-order',next);
-        const idx=big?parseInt(th.getAttribute('data-index')):colIndex;
-        rows.sort((a,b)=>{
-          const ta=a.children[idx]?.textContent?.trim()||'';
-          const tb=b.children[idx]?.textContent?.trim()||'';
-          const na=toNum(ta), nb=toNum(tb);
-          let cmp=0;
-          if(na!=null && nb!=null){ cmp=na-nb; }
-          else { cmp=ta.localeCompare(tb,'es',{numeric:true,sensitivity:'base'}); }
-          return next==='asc'?cmp:-cmp;
-        });
-        rows.forEach(r=>tbody.appendChild(r));
+  // --- FUNCIONES DE RENDERIZADO ---
+
+  function renderAll() {
+    if (!DATA || !DATA.data.length) return;
+    renderKPIs();
+    renderExchangeTable();
+    renderTimeSeriesChart();
+    renderHistoryTable();
+  }
+
+  function renderKPIs() {
+    const { headers, data } = DATA;
+    const H_px = resolveHeader(headers, 'precio');
+    const H_tt = resolveHeader(headers, 'trades_total');
+    const H_bt = resolveHeader(headers, 'comprados_total');
+    const H_st = resolveHeader(headers, 'vendidos_total');
+    const H_vnt = resolveHeader(headers, 'vol_netx_total');
+    const H_vut = resolveHeader(headers, 'vol_usdt_total');
+    
+    const sum = (H) => H ? data.reduce((acc, row) => acc + (toNum(row[H]) || 0), 0) : null;
+
+    const priceSum = sum(H_px);
+    const volNetxSum = sum(H_vnt);
+    const volUsdtSum = sum(H_vut);
+
+    $('kpiPrecio').textContent = priceSum != null ? '$' + fmt2.format(priceSum) : '—';
+    $('kpiTrades').textContent = fmt.format(sum(H_tt));
+    $('kpiComprados').textContent = fmt.format(sum(H_bt));
+    $('kpiVendidos').textContent = fmt.format(sum(H_st));
+    $('kpiVolNetx').textContent = volNetxSum != null ? fmt.format(volNetxSum) : '—';
+    $('kpiVolUsdt').textContent = volUsdtSum != null ? `${fmt.format(volUsdtSum)} $` : '—';
+  }
+
+  function renderExchangeTable() {
+    const { headers, data } = DATA;
+    const tbody = $('tblEx').querySelector('tbody');
+    tbody.innerHTML = EXCHANGES.map(pfx => {
+      const nm = DISPLAY_NAME[pfx] || pfx.toUpperCase();
+      const sumBySuffix = (suffix) => {
+        const header = `${pfx}_${suffix}`;
+        if (!headers.includes(header)) return 0;
+        return data.reduce((acc, row) => acc + (toNum(row[header]) || 0), 0);
+      };
+      return `<tr>
+        <td>${nm}</td>
+        <td>${fmt.format(sumBySuffix('trades'))}</td>
+        <td class="text-red">${fmt.format(sumBySuffix('vendidos'))}</td>
+        <td class="text-green">${fmt.format(sumBySuffix('comprados'))}</td>
+        <td>${fmt.format(sumBySuffix('vol_netx'))}</td>
+        <td>${fmt.format(sumBySuffix('vol_usdt'))} $</td>
+      </tr>`;
+    }).join('');
+    enableSort('tblEx');
+  }
+
+  function renderTimeSeriesChart() {
+    const { headers, data } = DATA;
+    const H_px = resolveHeader(headers, 'precio');
+    const H_vnt = resolveHeader(headers, 'vol_netx_total');
+    const H_date = resolveHeader(headers, 'fecha_ref');
+
+    const priceData = data.map(r => toNum(r[H_px]));
+    const volData = data.map(r => toNum(r[H_vnt]));
+    const labels = data.map(r => r[H_date] || '');
+
+    if (CHART) CHART.destroy();
+    CHART = new Chart($('chart').getContext('2d'), {
+      type: 'line', data: { labels, datasets: [ { label: 'Precio $NETX', data: priceData, yAxisID: 'y', borderColor: '#00e0ff', backgroundColor: 'rgba(0,224,255,0.1)', tension: 0.25, borderWidth: 2, pointRadius: 0 }, { label: 'Vol. $NETX (total)', data: volData, yAxisID: 'y1', type: 'bar', backgroundColor: 'rgba(42,211,155,0.6)', borderColor: '#2ad39b', borderWidth: 0 } ] },
+      options: { responsive: true, animation: false, interaction: { mode: 'index', intersect: false }, scales: { y: { position: 'left', grid: { color: '#1b2a4a' }, ticks: { color: '#9fb3ff' } }, y1: { position: 'right', grid: { drawOnChartArea: false }, ticks: { color: '#9fb3ff' } }, x: { grid: { color: '#1b2a4a' }, ticks: { color: '#9fb3ff' } } }, plugins: { legend: { labels: { color: '#cfe3ff' } }, tooltip: { backgroundColor: 'rgba(13,27,48,0.9)', titleColor: '#cfe3ff', bodyColor: '#9fb3ff', borderColor: '#2b3a66', borderWidth: 1 } } }
+    });
+  }
+
+  /**
+   * MODIFICADO: Renderiza la tabla histórica con paginación.
+   */
+  function renderHistoryTable() {
+    const { headers } = DATA;
+    const tHead = $('tblAll').querySelector('thead');
+    const tBody = $('tblAll').querySelector('tbody');
+    const H_date = resolveHeader(headers, 'fecha_ref');
+
+    if (!tHead.innerHTML) { // Renderiza la cabecera solo una vez
+      tHead.innerHTML = `<tr>${headers.map((h, i) => {
+        const title = (H_date && h === H_date) ? 'FECHA' : formatHeaderTitle(h);
+        return `<th data-index="${i}">${title}</th>`
+      }).join('')}</tr>`;
+    }
+    
+    const startIndex = (currentPage - 1) * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage;
+    const pageData = HIST_FILTERED_DATA.slice(startIndex, endIndex);
+
+    tBody.innerHTML = pageData.map(row => {
+      const cells = headers.map(h => {
+        const lowerH = h.toLowerCase();
+        const value = row[h];
+        let formattedValue = value == null ? '' : value;
+        let className = '';
+        if (H_date && h === H_date) {
+          formattedValue = formatDate(value);
+        } else {
+          const numValue = toNum(value);
+          if (numValue != null) {
+            if (lowerH.includes('precio')) formattedValue = '$' + fmt2.format(numValue);
+            else if (lowerH.includes('usdt')) { formattedValue = `${fmt.format(numValue)} $`; className = 'class="text-cyan"'; }
+            else formattedValue = fmt.format(numValue);
+          }
+        }
+        if (lowerH.includes('comprados')) className = 'class="text-green"';
+        else if (lowerH.includes('vendidos')) className = 'class="text-red"';
+        return `<td ${className}>${formattedValue}</td>`;
+      });
+      return `<tr>${cells.join('')}</tr>`;
+    }).join('');
+
+    renderPaginationControls();
+  }
+
+  /**
+   * NUEVO: Renderiza los controles de paginación para la tabla histórica.
+   */
+  function renderPaginationControls() {
+    const totalRows = HIST_FILTERED_DATA.length;
+    const totalPages = Math.ceil(totalRows / rowsPerPage);
+    const controlsContainer = $('paginationControls');
+    
+    if (totalPages <= 1) {
+      controlsContainer.innerHTML = '';
+      return;
+    }
+
+    controlsContainer.innerHTML = `
+      <button id="prevPage" class="btn" title="Página anterior">&laquo; Anterior</button>
+      <span class="pagination-info pill">Página ${currentPage} de ${totalPages}</span>
+      <button id="nextPage" class="btn" title="Página siguiente">Siguiente &raquo;</button>
+    `;
+
+    const prevButton = $('prevPage');
+    const nextButton = $('nextPage');
+    prevButton.disabled = currentPage === 1;
+    nextButton.disabled = currentPage === totalPages;
+
+    prevButton.onclick = () => { if (currentPage > 1) { currentPage--; renderHistoryTable(); } };
+    nextButton.onclick = () => { if (currentPage < totalPages) { currentPage++; renderHistoryTable(); } };
+  }
+
+  // --- MANEJO DE INTERACCIONES ---
+
+  /**
+   * MODIFICADO: Habilita la ordenación en tablas.
+   * Para la tabla histórica, ordena el array de datos y re-renderiza.
+   */
+  function enableSort(tableId, isBig = false) {
+    const table = $(tableId);
+    const ths = table.querySelectorAll('thead th');
+    ths.forEach((th, colIndex) => {
+      th.onclick = () => {
+        const currentOrder = th.getAttribute('data-order') || 'desc';
+        const nextOrder = currentOrder === 'asc' ? 'desc' : 'asc';
+        ths.forEach(x => x.removeAttribute('data-order'));
+        th.setAttribute('data-order', nextOrder);
+        const idx = isBig ? parseInt(th.getAttribute('data-index'), 10) : colIndex;
+
+        if (tableId === 'tblAll') {
+          const headerName = DATA.headers[idx];
+          if (!headerName) return;
+          HIST_FILTERED_DATA.sort((a, b) => {
+            const ta = a[headerName] || ''; const tb = b[headerName] || '';
+            const na = toNum(ta), nb = toNum(tb);
+            const cmp = (na != null && nb != null) ? na - nb : ta.toString().localeCompare(tb.toString(), 'es', { numeric: true, sensitivity: 'base' });
+            return nextOrder === 'asc' ? cmp : -cmp;
+          });
+          currentPage = 1; // Vuelve a la primera página después de ordenar
+          renderHistoryTable();
+        } else { // Lógica original para la tabla de exchanges (ordenación en el DOM)
+          const tbody = table.querySelector('tbody');
+          const rows = Array.from(tbody.querySelectorAll('tr'));
+          rows.sort((a,b)=>{
+            const ta=a.children[idx]?.textContent?.trim()||''; const tb=b.children[idx]?.textContent?.trim()||'';
+            const na=toNum(ta), nb=toNum(tb);
+            const cmp = (na!=null && nb!=null) ? na-nb : ta.localeCompare(tb,'es',{numeric:true,sensitivity:'base'});
+            return nextOrder==='asc'?cmp:-cmp;
+          });
+          rows.forEach(r=>tbody.appendChild(r));
+        }
       };
     });
   }
-
-  // Filtro rápido de la tabla histórica
-  function applyFilter(){
-    const q=$('txtFilterAll').value.toLowerCase();
-    const rows=$('tblAll').querySelectorAll('tbody tr');
-    rows.forEach(tr=>{
-      const hit=tr.textContent.toLowerCase().includes(q);
-      tr.style.display=hit?'':'none';
-    });
+  
+  /**
+   * MODIFICADO: Filtra el array de datos y re-renderiza la tabla.
+   */
+  function applyFilter() {
+    const query = $('txtFilterAll').value.toLowerCase();
+    HIST_FILTERED_DATA = DATA.data.filter(row => 
+      Object.values(row).some(val => val.toString().toLowerCase().includes(query))
+    );
+    currentPage = 1; // Vuelve a la primera página con cada nuevo filtro
+    renderHistoryTable();
   }
-  $('txtFilterAll').oninput=applyFilter;
 
-  // Carga inicial (sin barra de controles)
-  window.addEventListener('load', ()=>{ if(TSV_URL) loadTSV(TSV_URL); });
+  function setStatus(text, loading = false, detail = '') {
+    $('badge').textContent = text;
+    $('badge').classList.toggle('loading', !!loading);
+    $('badge').title = detail || '';
+    $('msg').textContent = detail || '';
+  }
+  
+  // --- INICIALIZACIÓN ---
+  
+  function init() {
+    $('txtFilterAll').oninput = applyFilter;
+    $('btnRefresh').onclick = () => { currentPage = 1; loadTSV(TSV_URL); };
+    if (TSV_URL) loadTSV(TSV_URL);
+    // Habilitar ordenación para la tabla de exchanges desde el inicio
+    enableSort('tblEx');
+  }
+
+  window.addEventListener('load', init);
 </script>
 </body>
 </html>
+
+
+</body>
+</html>
+
 
 
 
