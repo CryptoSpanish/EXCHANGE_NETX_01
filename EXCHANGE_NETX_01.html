@@ -19,7 +19,7 @@
   .row{display:grid;gap:16px}
   .row.kpis{grid-template-columns:repeat(6,1fr)}
   .kpi h3{margin:0 0 6px;color:#9fb3ff;font-size:12px;text-transform:uppercase;letter-spacing:.5px}
-  .kpi .v{font-size:28px;font-weight:700}
+  .kpi .v{font-size:28px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .v.green{color:var(--green)}.v.red{color:var(--red)}.v.cyan{color:var(--cyan)}
   .grid-2{display:grid;grid-template-columns:2.1fr 1fr;gap:16px}
   canvas{background:#0c1326;border-radius:12px;border:1px solid #1a2444}
@@ -47,14 +47,12 @@
   .text-red { color: var(--red); font-weight: 600; }
   .text-cyan { color: var(--cyan); font-weight: 600; }
 
-  /* NUEVO: Contenedor de la tabla histórica */
   .table-container {
     border: 1px solid #172045;
     border-radius: 12px;
-    overflow-x: auto; /* Mantiene el scroll horizontal por si acaso en pantallas muy pequeñas */
+    overflow-x: auto;
   }
 
-  /* NUEVO: Estilos para paginación */
   .pagination-controls {
     justify-content: center;
     margin-top: 16px;
@@ -68,6 +66,44 @@
   .pagination-info {
     padding: 0 15px;
     align-self: center;
+  }
+  
+  .promo-banner {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: rgba(12, 18, 32, 0.85);
+    border-top: 1px solid var(--cyan);
+    box-shadow: 0 0 20px rgba(0, 224, 255, 0.2);
+    backdrop-filter: blur(5px);
+    padding: 12px 0;
+    overflow: hidden;
+    z-index: 1000;
+  }
+  .promo-banner a {
+    display: block;
+    width: 100%;
+    text-decoration: none;
+    color: var(--ink);
+    white-space: nowrap;
+  }
+  .promo-banner .promo-text {
+    display: inline-block;
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+    animation: scroll-left 30s linear infinite;
+    will-change: transform;
+  }
+  @keyframes scroll-left {
+    from {
+      transform: translateX(100vw);
+    }
+    to {
+      transform: translateX(-100%);
+    }
   }
 
   @media (max-width:1100px){.row.kpis{grid-template-columns:repeat(3,1fr)}.grid-2{grid-template-columns:1fr}}
@@ -86,7 +122,7 @@
   </div>
 
   <div class="row kpis" aria-label="Indicadores clave">
-    <div class="card kpi"><h3>SUMA PRECIOS $NETX</h3><div id="kpiPrecio" class="v">—</div></div>
+    <div class="card kpi"><h3>PRECIO PROMEDIO $NETX</h3><div id="kpiPrecio" class="v">—</div></div>
     <div class="card kpi"><h3>TRADES TOTALES</h3><div id="kpiTrades" class="v">—</div></div>
     <div class="card kpi"><h3>$NETX COMPRADOS</h3><div id="kpiComprados" class="v green">—</div></div>
     <div class="card kpi"><h3>$NETX VENDIDOS</h3><div id="kpiVendidos" class="v red">—</div></div>
@@ -115,11 +151,9 @@
       <button id="btnRefresh" class="btn" title="Refrescar datos">Refrescar</button>
       <input id="txtFilterAll" placeholder="Filtrar…" style="max-width:220px"/>
     </div>
-    <!-- MODIFICADO: Se elimina el div con scroll y se añade un contenedor -->
     <div class="table-container">
       <table id="tblAll" aria-label="Tabla histórica"><thead></thead><tbody></tbody></table>
     </div>
-    <!-- NUEVO: Controles de paginación -->
     <div id="paginationControls" class="flex pagination-controls"></div>
   </div>
 </div>
@@ -142,7 +176,6 @@
   let DATA = null;
   let CHART = null;
   let EXCHANGES = [];
-  // NUEVO: Variables para paginación de la tabla histórica
   let HIST_FILTERED_DATA = [];
   let currentPage = 1;
   const rowsPerPage = 10;
@@ -187,7 +220,7 @@
       if (!parsed || !parsed.data.length) throw new Error("No se encontraron datos válidos.");
       
       DATA = parsed;
-      HIST_FILTERED_DATA = [...DATA.data]; // Copia inicial para filtrado/paginación
+      HIST_FILTERED_DATA = [...DATA.data];
       EXCHANGES = detectExchanges(DATA.headers);
       
       setStatus(`✓ ${DATA.data.length} registros · ${EXCHANGES.length} exchanges detectados`, false, `Actualizado: ${new Date().toLocaleTimeString()}`);
@@ -246,17 +279,32 @@
     const H_vut = resolveHeader(headers, 'vol_usdt_total');
     
     const sum = (H) => H ? data.reduce((acc, row) => acc + (toNum(row[H]) || 0), 0) : null;
+    
+    const avg = (H) => {
+      if (!H) return null;
+      let total = 0;
+      let count = 0;
+      data.forEach(row => {
+        const n = toNum(row[H]);
+        if (n != null) {
+          total += n;
+          count++;
+        }
+      });
+      return count > 0 ? total / count : null;
+    };
 
-    const priceSum = sum(H_px);
+    const priceAvg = avg(H_px);
     const volNetxSum = sum(H_vnt);
     const volUsdtSum = sum(H_vut);
 
-    $('kpiPrecio').textContent = priceSum != null ? '$' + fmt2.format(priceSum) : '—';
+    $('kpiPrecio').textContent = priceAvg != null ? '$' + fmt2.format(priceAvg) : '—';
     $('kpiTrades').textContent = fmt.format(sum(H_tt));
     $('kpiComprados').textContent = fmt.format(sum(H_bt));
     $('kpiVendidos').textContent = fmt.format(sum(H_st));
     $('kpiVolNetx').textContent = volNetxSum != null ? fmt.format(volNetxSum) : '—';
-    $('kpiVolUsdt').textContent = volUsdtSum != null ? `${fmt.format(volUsdtSum)} $` : '—';
+    // MODIFICADO: Se usa un espacio de no ruptura (&nbsp;)
+    $('kpiVolUsdt').innerHTML = volUsdtSum != null ? `${fmt.format(volUsdtSum)}&nbsp;$` : '—';
   }
 
   function renderExchangeTable() {
@@ -269,13 +317,14 @@
         if (!headers.includes(header)) return 0;
         return data.reduce((acc, row) => acc + (toNum(row[header]) || 0), 0);
       };
+      // MODIFICADO: Se usa un espacio de no ruptura (&nbsp;)
       return `<tr>
         <td>${nm}</td>
         <td>${fmt.format(sumBySuffix('trades'))}</td>
         <td class="text-red">${fmt.format(sumBySuffix('vendidos'))}</td>
         <td class="text-green">${fmt.format(sumBySuffix('comprados'))}</td>
         <td>${fmt.format(sumBySuffix('vol_netx'))}</td>
-        <td>${fmt.format(sumBySuffix('vol_usdt'))} $</td>
+        <td>${fmt.format(sumBySuffix('vol_usdt'))}&nbsp;$</td>
       </tr>`;
     }).join('');
     enableSort('tblEx');
@@ -298,16 +347,13 @@
     });
   }
 
-  /**
-   * MODIFICADO: Renderiza la tabla histórica con paginación.
-   */
   function renderHistoryTable() {
     const { headers } = DATA;
     const tHead = $('tblAll').querySelector('thead');
     const tBody = $('tblAll').querySelector('tbody');
     const H_date = resolveHeader(headers, 'fecha_ref');
 
-    if (!tHead.innerHTML) { // Renderiza la cabecera solo una vez
+    if (!tHead.innerHTML) {
       tHead.innerHTML = `<tr>${headers.map((h, i) => {
         const title = (H_date && h === H_date) ? 'FECHA' : formatHeaderTitle(h);
         return `<th data-index="${i}">${title}</th>`
@@ -330,7 +376,8 @@
           const numValue = toNum(value);
           if (numValue != null) {
             if (lowerH.includes('precio')) formattedValue = '$' + fmt2.format(numValue);
-            else if (lowerH.includes('usdt')) { formattedValue = `${fmt.format(numValue)} $`; className = 'class="text-cyan"'; }
+            // MODIFICADO: Se usa un espacio de no ruptura (&nbsp;)
+            else if (lowerH.includes('usdt')) { formattedValue = `${fmt.format(numValue)}&nbsp;$`; className = 'class="text-cyan"'; }
             else formattedValue = fmt.format(numValue);
           }
         }
@@ -344,9 +391,6 @@
     renderPaginationControls();
   }
 
-  /**
-   * NUEVO: Renderiza los controles de paginación para la tabla histórica.
-   */
   function renderPaginationControls() {
     const totalRows = HIST_FILTERED_DATA.length;
     const totalPages = Math.ceil(totalRows / rowsPerPage);
@@ -374,10 +418,6 @@
 
   // --- MANEJO DE INTERACCIONES ---
 
-  /**
-   * MODIFICADO: Habilita la ordenación en tablas.
-   * Para la tabla histórica, ordena el array de datos y re-renderiza.
-   */
   function enableSort(tableId, isBig = false) {
     const table = $(tableId);
     const ths = table.querySelectorAll('thead th');
@@ -398,9 +438,9 @@
             const cmp = (na != null && nb != null) ? na - nb : ta.toString().localeCompare(tb.toString(), 'es', { numeric: true, sensitivity: 'base' });
             return nextOrder === 'asc' ? cmp : -cmp;
           });
-          currentPage = 1; // Vuelve a la primera página después de ordenar
+          currentPage = 1;
           renderHistoryTable();
-        } else { // Lógica original para la tabla de exchanges (ordenación en el DOM)
+        } else {
           const tbody = table.querySelector('tbody');
           const rows = Array.from(tbody.querySelectorAll('tr'));
           rows.sort((a,b)=>{
@@ -415,15 +455,12 @@
     });
   }
   
-  /**
-   * MODIFICADO: Filtra el array de datos y re-renderiza la tabla.
-   */
   function applyFilter() {
     const query = $('txtFilterAll').value.toLowerCase();
     HIST_FILTERED_DATA = DATA.data.filter(row => 
       Object.values(row).some(val => val.toString().toLowerCase().includes(query))
     );
-    currentPage = 1; // Vuelve a la primera página con cada nuevo filtro
+    currentPage = 1;
     renderHistoryTable();
   }
 
@@ -440,18 +477,24 @@
     $('txtFilterAll').oninput = applyFilter;
     $('btnRefresh').onclick = () => { currentPage = 1; loadTSV(TSV_URL); };
     if (TSV_URL) loadTSV(TSV_URL);
-    // Habilitar ordenación para la tabla de exchanges desde el inicio
     enableSort('tblEx');
   }
 
   window.addEventListener('load', init);
 </script>
+
+<!-- Banner de promoción inferior -->
+<div class="promo-banner">
+  <a href="https://t.me/netx_es" target="_blank" rel="noopener noreferrer" title="Únete a la comunidad de NETX en Telegram">
+    <span class="promo-text">Únete a nuestra comunidad en TELEGRAM: NETX SPANISH - https://t.me/netx_es</span>
+  </a>
+</div>
+
 </body>
 </html>
 
 
-</body>
-</html>
+
 
 
 
